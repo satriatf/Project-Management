@@ -65,9 +65,8 @@
             </Form>
             <div class="login-footer-yellow text-center mt-4">
               <p class="text-muted small mb-0">
-                © 2024 IT Adira Finance. All rights reserved.
+                Team Management © 2025 by IT Adira Finance.
               </p>
-              <p class="text-muted small">Version 1.0.0</p>
             </div>
           </div>
         </div>
