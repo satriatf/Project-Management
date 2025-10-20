@@ -5,6 +5,7 @@ import app from '@/main'
 import store from '@/store/index.js'
 import { REFRESH_TOKEN } from '@/store/actions.type.js'
 import userService from '@/common/user.service.js'
+import { API_CONFIG } from '@/config/database.js'
 /* eslint-disable */
 let isRefreshing = false
 let failedQueue = []
@@ -44,8 +45,13 @@ function handleRefreshTokenFailure() {
 const ApiService = {
   init(app) {
     app.use(VueAxios, axios)
-    // app.axios.defaults.baseURL = import.meta.env.VITE_BASE_URL ?? 'http://localhost:8086/'
-    axios.defaults.timeout = 60000;
+    // Configure base URL for PostgreSQL backend using environment variables
+    app.axios.defaults.baseURL = API_CONFIG.baseURL
+    axios.defaults.timeout = API_CONFIG.timeout;
+    axios.defaults.headers.common = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
     this.setInterceptors()
   },
 

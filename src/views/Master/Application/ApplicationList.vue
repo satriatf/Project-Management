@@ -82,7 +82,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import TablePagination from '@/components/partials/TablePagination.vue'
-import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'ApplicationList',
@@ -120,9 +120,23 @@ export default {
       return new Date(date).toLocaleDateString('en-US', options)
     },
     confirmDelete(app) {
-      showDeleteConfirmation(app.name, () => {
-        this.$store.dispatch('master/softDeleteApplication', app.id)
-        showSuccessNotification(`Application "${app.name}" has been deleted successfully`)
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to delete "${app.name}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.$store.dispatch('master/softDeleteApplication', app.id)
+          Swal.fire(
+            'Deleted!',
+            `Application "${app.name}" has been deleted successfully.`,
+            'success'
+          )
+        }
       })
     }
   },

@@ -1,4 +1,21 @@
-import { encryptData, decryptData } from './secureStorage'
+import CryptoJS from 'crypto-js'
+
+// Simple encryption/decryption functions
+const SECRET_KEY = import.meta.env.VITE_SALT || 'default_salt'
+
+function encryptData(data) {
+  return CryptoJS.AES.encrypt(data, SECRET_KEY).toString()
+}
+
+function decryptData(ciphertext) {
+  try {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY)
+    return bytes.toString(CryptoJS.enc.Utf8)
+  } catch (error) {
+    console.error('Decryption error:', error)
+    return null
+  }
+}
 
 // Constants
 const ID_KEYS = {

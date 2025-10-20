@@ -116,7 +116,7 @@
 </template>
 
 <script>
-import { showSuccessNotification, showInfoNotification } from '@/common/notificationService'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'EmployeeCreate',

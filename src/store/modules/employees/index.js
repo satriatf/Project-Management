@@ -1,67 +1,11 @@
 // Employee Store Module
+import ApiService from '@/common/api.service'
+import { CALL_SERVICE_ASYNC_GET, CALL_SERVICE_ASYNC_SUBMIT, CALL_SERVICE_ASYNC_UPDATE, CALL_SERVICE_ASYNC_DELETE } from '@/store/actions.type'
+
 const state = {
-  employees: [
-    {
-      id: 1,
-      nik: '12233344',
-      name: 'Zestado Mahesa Yudha',
-      email: 'zestado.yudha@adira.co.id',
-      level: 'Manager',
-      isActive: true,
-      joinDate: '2025-09-30',
-      endDate: null
-    },
-    {
-      id: 2,
-      nik: '111111',
-      name: 'Ammar Sayuti',
-      email: 'ammar.sayuti@adira.co.id',
-      level: 'Asmen',
-      isActive: true,
-      joinDate: '2024-01-15',
-      endDate: null
-    },
-    {
-      id: 3,
-      nik: '2222222',
-      name: 'Bimo Saputra',
-      email: 'bimo@adira.co.id',
-      level: 'SH',
-      isActive: true,
-      joinDate: '2024-03-20',
-      endDate: null
-    },
-    {
-      id: 4,
-      nik: '333333',
-      name: 'Satria Tri Ferdiansyah',
-      email: 'v.satria.ferdiansyah@adira.co.id',
-      level: 'Staff',
-      isActive: true,
-      joinDate: '2024-06-01',
-      endDate: null
-    },
-    {
-      id: 5,
-      nik: '444444',
-      name: 'Andi Pratama',
-      email: 'andi.pratama@adira.co.id',
-      level: 'Intern',
-      isActive: true,
-      joinDate: '2024-07-01',
-      endDate: '2024-12-31'
-    },
-    {
-      id: 6,
-      nik: '555555',
-      name: 'Dewi Sartika',
-      email: 'dewi.sartika@adira.co.id',
-      level: 'Staff',
-      isActive: false,
-      joinDate: '2023-01-10',
-      endDate: '2024-09-30'
-    }
-  ]
+  employees: [],
+  loading: false,
+  error: null
 }
 
 const getters = {
@@ -86,22 +30,69 @@ const mutations = {
   },
   DELETE_EMPLOYEE(state, id) {
     state.employees = state.employees.filter(emp => emp.id !== id)
+  },
+  SET_LOADING(state, loading) {
+    state.loading = loading
+  },
+  SET_ERROR(state, error) {
+    state.error = error
   }
 }
 
 const actions = {
-  fetchEmployees({ commit }) {
-    // API call would go here
-    // For now using mock data
+  async fetchEmployees({ commit }) {
+    commit('SET_LOADING', true)
+    try {
+      const response = await ApiService.get('/employees')
+      commit('SET_EMPLOYEES', response.data)
+      commit('SET_ERROR', null)
+    } catch (error) {
+      commit('SET_ERROR', error.message)
+      console.error('Error fetching employees:', error)
+    } finally {
+      commit('SET_LOADING', false)
+    }
   },
-  addEmployee({ commit }, employee) {
-    commit('ADD_EMPLOYEE', employee)
+  async addEmployee({ commit }, employee) {
+    commit('SET_LOADING', true)
+    try {
+      const response = await ApiService.post('/employees', employee)
+      commit('ADD_EMPLOYEE', response.data)
+      commit('SET_ERROR', null)
+      return response.data
+    } catch (error) {
+      commit('SET_ERROR', error.message)
+      throw error
+    } finally {
+      commit('SET_LOADING', false)
+    }
   },
-  updateEmployee({ commit }, employee) {
-    commit('UPDATE_EMPLOYEE', employee)
+  async updateEmployee({ commit }, employee) {
+    commit('SET_LOADING', true)
+    try {
+      const response = await ApiService.put(`/employees/${employee.id}`, employee)
+      commit('UPDATE_EMPLOYEE', response.data)
+      commit('SET_ERROR', null)
+      return response.data
+    } catch (error) {
+      commit('SET_ERROR', error.message)
+      throw error
+    } finally {
+      commit('SET_LOADING', false)
+    }
   },
-  deleteEmployee({ commit }, id) {
-    commit('DELETE_EMPLOYEE', id)
+  async deleteEmployee({ commit }, id) {
+    commit('SET_LOADING', true)
+    try {
+      await ApiService.delete(`/employees/${id}`)
+      commit('DELETE_EMPLOYEE', id)
+      commit('SET_ERROR', null)
+    } catch (error) {
+      commit('SET_ERROR', error.message)
+      throw error
+    } finally {
+      commit('SET_LOADING', false)
+    }
   }
 }
 

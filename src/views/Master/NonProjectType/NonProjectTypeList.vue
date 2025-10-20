@@ -86,7 +86,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import TablePagination from '@/components/partials/TablePagination.vue'
-import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'NonProjectTypeList',

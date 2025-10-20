@@ -79,7 +79,6 @@
 import { LOGIN } from '@/store/actions.type';
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import axios from 'axios'
-import errorMessages from '@/assets/Response/responseError.json';
 import translations from '@/translations/translations.json'
 export default {
   components: {
@@ -126,6 +125,14 @@ export default {
       this.showPassword = !this.showPassword;
     },
     getErrorMessage(status) {
+      const errorMessages = {
+        400: 'Bad Request - Invalid input data',
+        401: 'Unauthorized - Invalid credentials',
+        403: 'Forbidden - Access denied',
+        404: 'Not Found - Resource not found',
+        500: 'Internal Server Error - Server error occurred',
+        503: 'Service Unavailable - Server temporarily unavailable'
+      };
       return errorMessages[status] || 'Terjadi kesalahan yang tidak diketahui.';
     },
 

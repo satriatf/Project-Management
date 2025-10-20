@@ -4,6 +4,7 @@ import JwtService from '@/common/jwt.service'
 import USertService from '@/common/user.service'
 import MenuService from '@/common/menu.service'
 import axios from 'axios'
+import { API_CONFIG } from '@/config/database.js'
 import {
   LOGIN,
   LOGOUT,
@@ -138,7 +139,7 @@ const actions = {
   [REFRESH_TOKEN](context, credentials) {
     return new Promise((resolve, reject) => {
       axios
-        .post(import.meta.env.VITE_BASE_URL_LOGIN + import.meta.env.VITE_REFRESH_TOKEN, {
+        .post(API_CONFIG.loginURL + API_CONFIG.refreshToken, {
           access_token: localStorage.getItem('token'),
           refresh_token: localStorage.getItem('refresh_token')
         })

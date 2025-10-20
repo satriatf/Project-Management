@@ -132,7 +132,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import userService from '@/common/user.service.js'
-import { showSuccessNotification, showInfoNotification } from '@/common/notificationService'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'NonProjectCreate',
