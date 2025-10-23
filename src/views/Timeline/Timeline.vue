@@ -274,16 +274,18 @@ export default {
               const yearEnd = new Date(this.currentYear, 11, 31)
               
               if (this.dateRangeOverlaps(startDate, endDate, yearStart, yearEnd)) {
-                projectTasks.push({
-                  id: `project-${proj.id}`,
-                  name: proj.name,
-                  type: 'project',
-                  startDate: proj.startDate,
-                  endDate: proj.endDate,
-                  status: proj.status,
-                  ticketNo: proj.ticketNo,
-                  pic: proj.pic
-                })
+                   projectTasks.push({
+                     id: `project-${proj.id}`,
+                     name: proj.name,
+                     type: 'project',
+                     startDate: proj.startDate,
+                     endDate: proj.endDate,
+                     status: proj.status,
+                     ticketNo: proj.ticketNo,
+                     pic: proj.pic,
+                     technicalLead: proj.technicalLead || '',
+                     createdBy: proj.createdBy || ''
+                   })
               }
             }
           }
@@ -295,17 +297,19 @@ export default {
             const date = np.date ? new Date(np.date + 'T00:00:00') : null
             
             if (date && date.getFullYear() === this.currentYear) {
-              nonProjectTasks.push({
-                id: `nonproject-${np.id}`,
-                name: np.description,
-                type: 'nonproject',
-                startDate: np.date,
-                endDate: np.date,
-                ticketNo: np.ticketNo,
-                application: np.application,
-                nonProjectType: np.type,
-                description: np.description
-              })
+                 nonProjectTasks.push({
+                   id: `nonproject-${np.id}`,
+                   name: np.description,
+                   type: 'nonproject',
+                   startDate: np.date,
+                   endDate: np.date,
+                   ticketNo: np.ticketNo,
+                   application: np.application,
+                   nonProjectType: np.type,
+                   description: np.description,
+                   createdBy: np.createdBy || '',
+                   resolverPic: np.resolverPic || ''
+                 })
             }
           }
         })

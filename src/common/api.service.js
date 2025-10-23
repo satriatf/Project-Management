@@ -44,19 +44,51 @@ function handleRefreshTokenFailure() {
 const ApiService = {
   init(app) {
     app.use(VueAxios, axios)
-    // app.axios.defaults.baseURL = import.meta.env.VITE_BASE_URL ?? 'http://localhost:8086/'
-    axios.defaults.timeout = 60000;
+    // Configure base URL to Spring Boot backend
+    const baseURL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080/api/'
+    app.axios.defaults.baseURL = baseURL
+    axios.defaults.baseURL = baseURL
+    axios.defaults.timeout = 60000
+    // Default headers
+    axios.defaults.headers.common['Accept'] = 'application/json'
+    axios.defaults.headers.common['Content-Type'] = 'application/json'
+    // If token exists, attach it
+    const token = JwtService.getToken()
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
     this.setInterceptors()
   },
 
   setInterceptors() {
+    // Request interceptor - remove auth header for login endpoint
+    axios.interceptors.request.use(
+      (config) => {
+        // Don't send Authorization header for login endpoint
+        if (config.url && config.url.includes('auth/login')) {
+          delete config.headers.Authorization
+        } else {
+          // For other endpoints, ensure token is attached
+          const token = JwtService.getToken()
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+          }
+        }
+        return config
+      },
+      (error) => {
+        return Promise.reject(error)
+      }
+    )
+    
+    // Response interceptor
     axios.interceptors.response.use(
       (response) => {
         return response // Proceed with the response if no issues
       },
       async (error) => {
         const originalRequest = error.config
-        if (error.response.config.url.includes('auth/login')) {
+        if (error.response && error.response.config.url && error.response.config.url.includes('auth/login')) {
           return Promise.reject(error);
         }
         // Check if the error is 401 Unauthorized and the request hasn't been retried
@@ -114,8 +146,9 @@ const ApiService = {
 
 
   setHeader(nik) {
+    const token = JwtService.getToken()
     const headers = {
-      key: `${JwtService.getToken()}`,
+      Authorization: token ? `Bearer ${token}` : undefined,
       // 'Content-Security-Policy': "script-src 'self' js.example.com",
       // 'X-Frame-Options': 'SAMEORIGIN',
       // 'X-Content-Type-Options': 'nosniff',
@@ -135,8 +168,12 @@ const ApiService = {
       'createdBy': userService.getNik() ?? nik.nik
     };
     Object.keys(headers).forEach((key) => {
-      app.axios.defaults.headers.common[key] = headers[key];
-    });
+      const val = headers[key]
+      if (val !== undefined && val !== null) {
+        app.axios.defaults.headers.common[key] = val
+        axios.defaults.headers.common[key] = val
+      }
+    })
   },
   setCROSS() {
     app.axios.defaults.headers.common['Access-Control-Allow-Origin'] = true
@@ -206,30 +243,6 @@ const ApiService = {
   delete(resource) {
     return app.axios.delete(`${resource}`)
   }
-  // delete(resource) {
-  //   return app.axios.delete(`${resource}`).catch((error) => {
-  //     throw new Error(`[RWV] ApiService ${error}`)
-  //   })
-  // }
 }
-
-// Interceptor untuk menangani error
-// ApiService.axios.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response) {
-//       // Jika ada response dari server
-//       if (error.response.status === 404) {
-//         router.push({ name: 'ErrorPage', params: { message: 'Page not found' } })
-//       } else if (error.response.status === 500) {
-//         router.push({ name: 'ErrorPage', params: { message: 'Internal server error' } })
-//       }
-//     } else {
-//       // Jika tidak ada response (koneksi gagal atau masalah jaringan)
-//       router.push({ name: 'ErrorPage', params: { message: 'Server connection lost' } })
-//     }
-//     return Promise.reject(error)
-//   }
-// )
 
 export default ApiService

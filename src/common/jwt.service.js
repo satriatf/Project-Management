@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 const ID_TOKEN_KEY = 'token'
 const ID_REFRESH_TOKEN_KEY = 'refresh_token'
 
@@ -9,7 +11,19 @@ export const getRefreshToken = ()=>{
 }
 
 export const saveToken = token => {
+  console.log('💾 JWT Service - Saving token to sessionStorage:', token ? `${token.substring(0, 50)}...` : 'null');
   window.sessionStorage.setItem(ID_TOKEN_KEY, token)
+  
+  // UPDATE AXIOS DEFAULT HEADER
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  } else {
+    delete axios.defaults.headers.common['Authorization']
+  }
+  
+  console.log('💾 JWT Service - Token saved. Verifying...');
+  const saved = window.sessionStorage.getItem(ID_TOKEN_KEY)
+  console.log('💾 JWT Service - Verification:', saved ? 'SUCCESS' : 'FAILED');
 }
 
 export const saveRefreshToken = token => {
@@ -18,6 +32,7 @@ export const saveRefreshToken = token => {
 
 export const destroyToken = () => {
   window.sessionStorage.removeItem(ID_TOKEN_KEY)
+  delete axios.defaults.headers.common['Authorization']
 }
 export const destroyRefreshToken = () => {
   window.sessionStorage.removeItem(ID_REFRESH_TOKEN_KEY)

@@ -53,7 +53,7 @@
 import { mapGetters } from 'vuex'
 import NonProjectTable from '@/components/NonProjects/NonProjectTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
-import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
+import { showSuccessNotification, showDeleteConfirmation, showErrorNotification } from '@/common/notificationService'
 
 export default {
   name: 'NonProjectList',
@@ -70,16 +70,41 @@ export default {
   },
   computed: {
     ...mapGetters({
-      nonProjects: 'nonProjects/allNonProjects'
+      nonProjects: 'nonProjects/allNonProjects',
+      employees: 'employees/activeEmployees'
     }),
-    filteredNonProjects() {
-      if (!this.searchQuery) {
-        return this.nonProjects
+    // Table-ready rows with names resolved
+    tableRows() {
+      const nameById = (id) => {
+        const e = this.employees.find(x => x.sk_user === id)
+        return e ? e.employee_name : null
       }
+      return this.nonProjects.map(n => {
+        // support multi-pic JSON if present
+        let resolverNames = null
+        if (n.resolverPicsJson) {
+          try {
+            const arr = JSON.parse(n.resolverPicsJson)
+            resolverNames = Array.isArray(arr) ? arr.map(nameById).filter(Boolean).join(', ') : null
+          } catch {}
+        }
+        if (!resolverNames && n.resolverPic) {
+          resolverNames = nameById(n.resolverPic)
+        }
+        return {
+          ...n,
+          createdByName: nameById(n.createdBy),
+          resolverPicNames: resolverNames,
+          attachmentsCount: Array.isArray(n.attachment) ? n.attachment.length : (n.attachment ? 1 : 0)
+        }
+      })
+    },
+    filteredNonProjects() {
+      if (!this.searchQuery) return this.tableRows
       const query = this.searchQuery.toLowerCase()
-      return this.nonProjects.filter(np => 
-        np.ticketNo.toLowerCase().includes(query) ||
-        np.description.toLowerCase().includes(query)
+      return this.tableRows.filter(np => 
+        (np.ticketNo || '').toLowerCase().includes(query) ||
+        (np.description || '').toLowerCase().includes(query)
       )
     },
     paginatedNonProjects() {
@@ -90,10 +115,33 @@ export default {
   },
   methods: {
     confirmDelete(np) {
-      showDeleteConfirmation(np.ticketNo, () => {
-        this.$store.dispatch('nonProjects/deleteNonProject', np.id)
-        showSuccessNotification(`Ticket "${np.ticketNo}" has been deleted successfully`)
+      showDeleteConfirmation(np.ticketNo, async () => {
+        try {
+          await this.$store.dispatch('nonProjects/deleteNonProject', np.id)
+          showSuccessNotification(`Ticket "${np.ticketNo}" has been deleted successfully`)
+          // Ensure refresh
+          await this.$store.dispatch('nonProjects/fetchNonProjects')
+        } catch (err) {
+          const msg = err?.response?.data?.message || err?.message || 'Failed to delete Non-Project'
+          showErrorNotification(msg)
+        }
       })
+    }
+  },
+  mounted() {
+    // Load non-projects from backend
+    this.$store.dispatch('nonProjects/fetchNonProjects')
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'nonproject-list' })
     }
   },
   watch: {

@@ -12,10 +12,10 @@
         <div class="col-12">
           <div class="welcome-card p-4 rounded shadow-sm bg-white d-flex align-items-center">
             <div class="avatar-circle me-3">
-              <span class="avatar-text">{{ userInitialsShort }}</span>
+              <span class="avatar-text">{{ userInitialsFull }}</span>
             </div>
             <div>
-              <div class="fw-bold" style="color:#111;">Welcome</div>
+              <div class="fw-bold" style="color:#111;">Welcome to</div>
               <small class="text-muted">{{ userName }}</small>
             </div>
             <div class="ms-auto">
@@ -105,6 +105,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import userService from '@/common/user.service'
 
 export default {
   name: 'DashboardView',
@@ -132,33 +133,32 @@ export default {
       return this.holidays.length
     },
     userName() {
-      const user = localStorage.getItem('user')
-      if (!user) return ''
-      try {
-        const parsed = JSON.parse(user)
-        return parsed?.name || ''
-      } catch {
-        return ''
-      }
-    },
-    userInitialsShort() {
-      const name = this.userName?.trim()
-      if (!name) return ''
-      const parts = name.split(/\s+/)
-      if (parts.length === 1) return parts[0].slice(0, 2).toLowerCase()
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toLowerCase()
+      // Ambil nama yang tersimpan terenkripsi dari sessionStorage dan dekripsi via userService
+      return userService.getNama() || ''
     },
     userInitialsFull() {
       const name = this.userName?.trim()
       if (!name) return ''
+      // show full initials in lowercase, e.g. "Satria Tri Ferdiansyah" => "stf"
       return name.split(/\s+/).map(p => p[0]).join('').toLowerCase()
     }
   },
   methods: {
     signOut() {
-      localStorage.clear()
-      this.$router.push({ name: 'login' })
+      // Clear sessionStorage dan redirect
+      sessionStorage.clear()
+      this.$router.push({ name: 'login' }).then(() => {
+        window.location.reload()
+      })
     }
+  },
+  mounted() {
+    // Load data from API when component mounted
+    this.$store.dispatch('employees/fetchEmployees')
+    this.$store.dispatch('projects/fetchProjects')
+    this.$store.dispatch('nonProjects/fetchNonProjects')
+    this.$store.dispatch('master/fetchApplications')
+    this.$store.dispatch('master/fetchHolidays')
   }
 }
 </script>

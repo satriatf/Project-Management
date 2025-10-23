@@ -46,8 +46,8 @@
             <tbody>
               <tr v-for="status in paginatedStatuses" :key="status.id">
                 <td>{{ status.name }}</td>
-                <td>{{ status.createdBy }}</td>
-                <td>{{ formatDate(status.createdDate) }}</td>
+                <td>{{ status.createdBy || '-' }}</td>
+                <td>{{ formatDate(status.createdAt) }}</td>
                 <td>
                   <button
                     @click="confirmDelete(status)"
@@ -61,7 +61,7 @@
                 </td>
               </tr>
               <tr v-if="filteredStatuses.length === 0">
-                <td colspan="4" class="text-center text-muted">No project statuses found</td>
+                <td colspan="4" class="text-center text-muted" style="padding: 3rem 0;">No project statuses found</td>
               </tr>
             </tbody>
           </table>
@@ -124,6 +124,22 @@ export default {
         this.$store.dispatch('master/softDeleteProjectStatus', status.id)
         showSuccessNotification(`Project status "${status.name}" has been deleted successfully`)
       })
+    }
+  },
+  mounted() {
+    // Load project statuses from backend
+    this.$store.dispatch('master/fetchProjectStatuses')
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'project-status-list' })
     }
   },
   watch: {

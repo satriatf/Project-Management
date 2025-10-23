@@ -11,11 +11,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="application in applications" :key="application.id">
+        <tr v-if="applications.length === 0">
+          <td colspan="5" class="text-center text-muted py-4">No applications found</td>
+        </tr>
+        <tr v-else v-for="application in applications" :key="application.id">
           <td><input type="checkbox" class="form-check-input"></td>
           <td>{{ application.name }}</td>
-          <td>{{ application.createdBy }}</td>
-          <td>{{ formatDate(application.createdDate) }}</td>
+          <td>{{ application.createdBy || '-' }}</td>
+          <td>{{ formatDate(application.createdAt) }}</td>
           <td>
             <div class="d-flex gap-2">
               <router-link 

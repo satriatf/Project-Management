@@ -3,7 +3,6 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th><input type="checkbox" class="form-check-input"></th>
           <th>Project Ticket No</th>
           <th>Project Name</th>
           <th>Project Status</th>
@@ -17,34 +16,38 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="project in projects" :key="project.id">
-          <td><input type="checkbox" class="form-check-input"></td>
-          <td>{{ project.ticketNo }}</td>
-          <td>{{ project.name }}</td>
-          <td><span class="badge bg-secondary">{{ project.status }}</span></td>
-          <td>{{ project.technicalLead }}</td>
-          <td>{{ project.pic.join(', ') }}</td>
-          <td>{{ formatDate(project.startDate) }}</td>
-          <td>{{ formatDate(project.endDate) }}</td>
-          <td>{{ getTotalDays(project.startDate, project.endDate) }}</td>
+        <tr v-if="projects.length === 0">
+          <td colspan="10" class="text-center text-muted" style="padding: 3rem 0;">
+            No projects found
+          </td>
+        </tr>
+        <tr v-else v-for="project in projects" :key="project.sk_project">
+          <td>{{ project.project_ticket_no }}</td>
+          <td>{{ project.project_name }}</td>
+          <td><span class="badge bg-secondary">{{ project.project_status }}</span></td>
+          <td>{{ project.technical_lead }}</td>
+          <td>{{ parsePics(project.pics_json) }}</td>
+          <td>{{ formatDate(project.start_date) }}</td>
+          <td>{{ formatDate(project.end_date) }}</td>
+          <td>{{ project.total_day || 0 }}</td>
           <td>
             <div class="progress" style="height: 20px; min-width: 80px;">
               <div 
                 class="progress-bar" 
-                :class="getProgressBarClass(project.percentDone)" 
+                :class="getProgressBarClass(project.percent_done)" 
                 role="progressbar"
-                :style="`width: ${project.percentDone}%`" 
-                :aria-valuenow="project.percentDone" 
+                :style="`width: ${project.percent_done}%`" 
+                :aria-valuenow="project.percent_done" 
                 aria-valuemin="0"
                 aria-valuemax="100">
-                {{ project.percentDone }}%
+                {{ project.percent_done }}%
               </div>
             </div>
           </td>
           <td>
             <div class="d-flex gap-2">
               <router-link 
-                :to="{ name: 'project-edit', params: { id: project.id } }" 
+                :to="{ name: 'project-edit', params: { id: project.sk_project } }" 
                 class="btn btn-sm btn-link p-0"
                 title="Edit">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -84,13 +87,14 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' }
       return new Date(date).toLocaleDateString('en-US', options)
     },
-    getTotalDays(start, end) {
-      if (!start || !end) return '-'
-      const s = new Date(start)
-      const e = new Date(end)
-      const ms = e - s
-      if (Number.isNaN(ms) || ms < 0) return '-'
-      return Math.ceil(ms / (1000 * 60 * 60 * 24))
+    parsePics(picsJson) {
+      if (!picsJson) return '-'
+      try {
+        const pics = JSON.parse(picsJson)
+        return Array.isArray(pics) ? pics.join(', ') : '-'
+      } catch {
+        return '-'
+      }
     },
     getProgressBarClass(percent) {
       if (percent >= 100) return 'bg-success'

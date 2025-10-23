@@ -44,13 +44,16 @@ const mutations = {
     state.isAuthenticated = true
     state.user = user
     state.error = {}
-    // Token
+    
+    // Save token (encrypted is OK for token)
     JwtService.saveToken(state.user.data.accessToken)
-    JwtService.saveRefreshToken(state.user.data.refreshToken)
-    // User
-    USertService.saveNama(state.user.data.nama)
-    USertService.saveNik(state.user.data.nik)
-    USertService.saveRole(state.user.data.role)
+    if (state.user.data.refreshToken) {
+      JwtService.saveRefreshToken(state.user.data.refreshToken)
+    }
+    
+    // DON'T save user data with encryption - Login.vue already saved to plain sessionStorage
+    // User data (nama, nik, role) already saved by Login.vue as plain text
+    
     // Menu
     MenuService.saveMenuActivePage('Master_Budget')
     MenuService.saveMenuIndex(0)
@@ -89,24 +92,74 @@ const getters = {
 const actions = {
   [LOGIN](context, credentials) {
     return new Promise((resolve, reject) => {
-      ApiService.setHeader(credentials.body)
-      ApiService.post(credentials.url, credentials.body)
+      // Call backend auth login
+      const url = credentials?.url || (import.meta.env.VITE_BASE_URL_LOGIN + import.meta.env.VITE_AUTH_LOGIN)
+      console.log('📡 AUTH STORE - Calling login API:', { url, email: credentials.body?.email });
+      
+      ApiService.post(url, credentials.body)
         .then(({ data }) => {
-          context.commit(GET_RESPON, data)
-          resolve(data)
+          console.log('📡 AUTH STORE - Login response received:', data);
+          console.log('📡 AUTH STORE - Data structure:', JSON.stringify(data, null, 2));
+          
+          // Expecting backend to return { status, token, user }
+          if (data && data.token) {
+            // Normalize payload to Vuex state shape
+            const payload = { 
+              data: { 
+                accessToken: data.token, 
+                refreshToken: null, 
+                nama: data.user?.employeeName || 'User', 
+                nik: String(data.user?.employeeNik || ''), 
+                role: data.user?.level || 'Staff' 
+              } 
+            }
+            console.log('📡 AUTH STORE - Committing SET_AUTH with payload:', JSON.stringify(payload, null, 2));
+            
+            // Commit auth state FIRST before resolving
+            context.commit(SET_AUTH, payload)
+            console.log('📡 AUTH STORE - SET_AUTH committed successfully');
+            
+            // Check if token was saved
+            const savedToken = JwtService.getToken()
+            console.log('📡 AUTH STORE - Token saved to sessionStorage:', savedToken ? 'YES' : 'NO');
+            console.log('📡 AUTH STORE - Token value:', savedToken);
+            
+            // Save response for result getter
+            context.commit(GET_RESPON, data)
+            
+            // Resolve with NORMALIZED response that Login.vue expects
+            const normalizedResponse = {
+              status: data.status,
+              token: data.token,
+              user: data.user,
+              // Also include normalized data for compatibility
+              data: payload.data
+            }
+            console.log('📡 AUTH STORE - Resolving with normalized response:', normalizedResponse);
+            resolve(normalizedResponse)
+          } else {
+            console.warn('📡 AUTH STORE - Response missing token:', data);
+            reject({ message: 'Invalid response from server' })
+          }
         })
-        .catch(({ response }) => {
+        .catch((error) => {
+          console.error('📡 AUTH STORE - Login error:', error);
+          console.error('📡 AUTH STORE - Error response:', error?.response);
+          console.error('📡 AUTH STORE - Error data:', error?.response?.data);
+          
+          // Handle error properly
+          const response = error?.response
           if (!response?.data?.message){
             const errorResponse = {
-              ...response,
+              ...error,
               data: {
                 ...response?.data,
-                message: response?.data?.message || "Sistem Sedang offline. dimohon menuggu beberapa saat lagi!"
+                message: response?.data?.message || "Email atau password salah!"
               }
             };
             reject(errorResponse)
           }else{
-            reject(response)
+            reject(error)
           }
         })
     })

@@ -14,8 +14,8 @@
         <tr v-for="type in types" :key="type.id">
           <td><input type="checkbox" class="form-check-input"></td>
           <td>{{ type.name }}</td>
-          <td>{{ type.createdBy }}</td>
-          <td>{{ formatDate(type.createdDate) }}</td>
+          <td>{{ type.createdBy || '-' }}</td>
+          <td>{{ formatDate(type.createdAt) }}</td>
           <td>
             <div class="d-flex gap-2">
               <router-link 

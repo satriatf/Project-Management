@@ -37,7 +37,7 @@
           <table class="table table-hover align-middle" style="min-width: 700px;">
             <thead class="table-light">
               <tr>
-                <th style="min-width: 220px;">Holiday Name</th>
+                <th style="min-width: 220px;">Name</th>
                 <th style="min-width: 140px;">Date</th>
                 <th style="min-width: 160px;">Created By</th>
                 <th style="min-width: 160px;">Created Date</th>
@@ -46,10 +46,10 @@
             </thead>
             <tbody>
               <tr v-for="holiday in paginatedHolidays" :key="holiday.id">
-                <td>{{ holiday.name }}</td>
+                <td>{{ holiday.description }}</td>
                 <td>{{ formatDate(holiday.date) }}</td>
-                <td>{{ holiday.createdBy }}</td>
-                <td>{{ formatDate(holiday.createdDate) }}</td>
+                <td>{{ holiday.createdBy || '-' }}</td>
+                <td>{{ formatDate(holiday.createdAt) }}</td>
                 <td>
                   <button
                     @click="confirmDelete(holiday)"
@@ -63,7 +63,7 @@
                 </td>
               </tr>
               <tr v-if="filteredHolidays.length === 0">
-                <td colspan="5" class="text-center text-muted">No holidays found</td>
+                <td colspan="5" class="text-center text-muted" style="padding: 3rem 0;">No holidays found</td>
               </tr>
             </tbody>
           </table>
@@ -106,7 +106,7 @@ export default {
       }
       const query = this.searchQuery.toLowerCase()
       return this.holidays.filter(holiday => 
-        holiday.name.toLowerCase().includes(query)
+        holiday.description?.toLowerCase().includes(query)
       )
     },
     paginatedHolidays() {
@@ -122,10 +122,26 @@ export default {
       return new Date(date).toLocaleDateString('en-US', options)
     },
     confirmDelete(holiday) {
-      showDeleteConfirmation(holiday.name, () => {
+      showDeleteConfirmation(holiday.description, () => {
         this.$store.dispatch('master/softDeleteHoliday', holiday.id)
-        showSuccessNotification(`Holiday "${holiday.name}" has been deleted successfully`)
+        showSuccessNotification(`Holiday "${holiday.description}" has been deleted successfully`)
       })
+    }
+  },
+  mounted() {
+    // Load holidays from backend
+    this.$store.dispatch('master/fetchHolidays')
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'holiday-list' })
     }
   },
   watch: {

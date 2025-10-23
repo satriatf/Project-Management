@@ -40,35 +40,26 @@
 </template>
 
 <script>
+import JwtService from '@/common/jwt.service'
+import userService from '@/common/user.service'
 export default {
   name: 'AppNavbar',
   computed: {
     userName() {
-      const user = localStorage.getItem('user')
-      if (!user) return ''
-      try {
-        const parsed = JSON.parse(user)
-        return parsed?.name || ''
-      } catch {
-        return ''
-      }
+      // Use decrypted name from secure session storage
+      return userService.getNama() || ''
     },
     userRole() {
-      const user = localStorage.getItem('user')
-      if (!user) return ''
-      try {
-        const parsed = JSON.parse(user)
-        return parsed?.role || ''
-      } catch {
-        return ''
-      }
+      // getRole returns parsed JSON if stored as JSON; normalize to string
+      const role = userService.getRole()
+      if (Array.isArray(role)) return role.join(', ')
+      return role || ''
     },
     userInitialsShort() {
       const name = this.userName?.trim()
       if (!name) return ''
-      const parts = name.split(/\s+/)
-      if (parts.length === 1) return parts[0].slice(0, 2).toLowerCase()
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toLowerCase()
+      // use full initials in lowercase (e.g., "stf")
+      return name.split(/\s+/).map(p => p[0]).join('').toLowerCase()
     },
     userInitialsFull() {
       const name = this.userName?.trim()
@@ -88,8 +79,13 @@ export default {
         confirmButtonText: 'Logout!',
       }).then((result) => {
         if (result && result.isConfirmed) {
-          localStorage.clear()
-          this.$router.push({ name: 'login' })
+          // Clear session and tokens
+          sessionStorage.clear()
+          JwtService.destroyToken()
+          // Navigate to login and force reload to reset app state
+          this.$router.push({ name: 'login' }).then(() => {
+            window.location.reload()
+          })
         }
       })
     }

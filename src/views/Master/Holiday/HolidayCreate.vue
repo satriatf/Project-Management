@@ -45,7 +45,6 @@
 </template>
 
 <script>
-import userService from '@/common/user.service.js'
 export default {
   name: 'HolidayCreate',
   data() {
@@ -57,17 +56,28 @@ export default {
     }
   },
   methods: {
-    handleSubmit() {
-      const newHoliday = {
-        id: Date.now(),
-        name: this.form.name,
-        date: this.form.date,
-        createdBy: userService.getNama() || 'Unknown',
-        createdDate: new Date().toISOString().split('T')[0],
-        isDeleted: false
+    async handleSubmit() {
+      try {
+        // Backend expects { date, description }, auto-fills created_by
+        const payload = {
+          date: this.form.date,
+          description: this.form.name
+        }
+        await this.$store.dispatch('master/addHoliday', payload)
+        this.$router.push({ 
+          name: 'holiday-list',
+          query: {
+            flash: `Holiday \"${this.form.name}\" created successfully`,
+            type: 'success'
+          }
+        })
+      } catch (error) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: error.response?.data?.message || 'Failed to create holiday'
+        })
       }
-      this.$store.dispatch('master/addHoliday', newHoliday)
-      this.$router.push({ name: 'holiday-list' })
     }
   }
 }

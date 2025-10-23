@@ -19,7 +19,8 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.nik" 
+                v-model="form.nik"
+                placeholder="Enter employee NIK" 
                 required>
             </div>
 
@@ -28,7 +29,8 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.name" 
+                v-model="form.name"
+                placeholder="Enter employee name" 
                 required>
             </div>
 
@@ -37,14 +39,15 @@
               <input 
                 type="email" 
                 class="form-control" 
-                v-model="form.email" 
+                v-model="form.email"
+                placeholder="Enter employee email" 
                 required>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Level<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.level" required>
-                <option value="">Select one</option>
+                <option value="">Select</option>
                 <option value="Manager">Manager</option>
                 <option value="Asmen">Asmen</option>
                 <option value="SH">SH</option>
@@ -56,7 +59,7 @@
             <div class="col-md-6">
               <label class="form-label">Is Active<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.isActive" required>
-                <option value="">Select status</option>
+                <option value="">Select</option>
                 <option :value="true">Active</option>
                 <option :value="false">Inactive</option>
               </select>
@@ -84,7 +87,8 @@
                 <input 
                   :type="showPassword ? 'text' : 'password'" 
                   class="form-control" 
-                  v-model="form.password" 
+                  v-model="form.password"
+                  placeholder="Enter password" 
                   required>
                 <button 
                   class="btn btn-outline-secondary" 
@@ -116,7 +120,7 @@
 </template>
 
 <script>
-import { showSuccessNotification, showInfoNotification } from '@/common/notificationService'
+import { showInfoNotification } from '@/common/notificationService'
 
 export default {
   name: 'EmployeeCreate',
@@ -136,15 +140,26 @@ export default {
     }
   },
   methods: {
-    handleSubmit() {
-      const newEmployee = {
-        id: Date.now(),
-        ...this.form
+    async handleSubmit() {
+      try {
+        const newEmployee = { ...this.form }
+        await this.$store.dispatch('employees/addEmployee', newEmployee)
+        localStorage.removeItem('employeeDraft')
+        this.$router.push({ 
+          name: 'employee-list', 
+          query: { 
+            flash: `Employee \"${newEmployee.name}\" created successfully`,
+            type: 'success'
+          }
+        })
+      } catch (error) {
+        console.error('Create employee error:', error)
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to create employee. Please check your input and try again.'
+        })
       }
-      this.$store.dispatch('employees/addEmployee', newEmployee)
-      localStorage.removeItem('employeeDraft')
-      showSuccessNotification(`Employee "${newEmployee.name}" has been created successfully`)
-      this.$router.push({ name: 'employee-list' })
     },
     handleDraft() {
       // Save as draft logic

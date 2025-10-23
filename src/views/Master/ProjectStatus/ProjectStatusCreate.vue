@@ -36,7 +36,6 @@
 </template>
 
 <script>
-import userService from '@/common/user.service.js'
 export default {
   name: 'ProjectStatusCreate',
   data() {
@@ -47,16 +46,24 @@ export default {
     }
   },
   methods: {
-    handleSubmit() {
-      const newStatus = {
-        id: Date.now(),
-        name: this.form.name,
-        createdBy: userService.getNama() || 'Unknown',
-        createdDate: new Date().toISOString().split('T')[0],
-        isDeleted: false
+    async handleSubmit() {
+      try {
+        // Send only the name string, backend will auto-fill created_by
+        await this.$store.dispatch('master/addProjectStatus', this.form.name)
+        this.$router.push({ 
+          name: 'project-status-list',
+          query: {
+            flash: `Project Status \"${this.form.name}\" created successfully`,
+            type: 'success'
+          }
+        })
+      } catch (error) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: error.response?.data?.message || 'Failed to create project status'
+        })
       }
-      this.$store.dispatch('master/addProjectStatus', newStatus)
-      this.$router.push({ name: 'project-status-list' })
     }
   }
 }

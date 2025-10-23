@@ -46,8 +46,8 @@
             <tbody>
               <tr v-for="app in paginatedApplications" :key="app.id">
                 <td>{{ app.name }}</td>
-                <td>{{ app.createdBy }}</td>
-                <td>{{ formatDate(app.createdDate) }}</td>
+                <td>{{ app.createdBy || '-' }}</td>
+                <td>{{ formatDate(app.createdAt) }}</td>
                 <td>
                   <button
                     @click="confirmDelete(app)"
@@ -61,7 +61,7 @@
                 </td>
               </tr>
               <tr v-if="filteredApplications.length === 0">
-                <td colspan="4" class="text-center text-muted">No applications found</td>
+                <td colspan="4" class="text-center text-muted" style="padding: 3rem 0;">No applications found</td>
               </tr>
             </tbody>
           </table>
@@ -124,6 +124,22 @@ export default {
         this.$store.dispatch('master/softDeleteApplication', app.id)
         showSuccessNotification(`Application "${app.name}" has been deleted successfully`)
       })
+    }
+  },
+  mounted() {
+    // Load applications from backend
+    this.$store.dispatch('master/fetchApplications')
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'application-list' })
     }
   },
   watch: {

@@ -46,6 +46,9 @@ app.provide('loadingRef', loadingRef)
 
 
 // Mount App
+// Initialize API service (Axios baseURL, interceptors)
+ApiService.init(app)
+
 app.mixin(globalFormat)
 app.use(ToastPlugin);
 app.component('GlobalLoading', GlobalLoading)
@@ -55,19 +58,19 @@ app.use(VueSweetalert2)
 app.component('EasyDataTable', Vue3EasyDataTable);
 app.directive("permission", permissionDirective);
 app.mount('#app')
-// Tambahkan event listener global di sini
-document.addEventListener('contextmenu', (e) => e.preventDefault()) // Nonaktifkan klik kanan
 
-document.addEventListener('keydown', (e) => {
-  if (
-    e.key === 'F12' ||
-    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-    (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-    (e.ctrlKey && e.key === 'U')
-  ) {
-    e.preventDefault()
-  }
-})
+// DISABLED FOR DEVELOPMENT - Enable untuk production
+// document.addEventListener('contextmenu', (e) => e.preventDefault()) // Nonaktifkan klik kanan
+// document.addEventListener('keydown', (e) => {
+//   if (
+//     e.key === 'F12' ||
+//     (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+//     (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+//     (e.ctrlKey && e.key === 'U')
+//   ) {
+//     e.preventDefault()
+//   }
+// })
 
 const showIdlePopup = () => {
   let countdown = 240
@@ -200,5 +203,3 @@ setInterval(checkIdleTime, 1000)
 
 window.$ = $
 export default app
-
-ApiService.init(app)

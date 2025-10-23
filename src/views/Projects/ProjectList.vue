@@ -78,7 +78,8 @@ export default {
       }
       const query = this.searchQuery.toLowerCase()
       return this.projects.filter(proj =>
-        proj.name.toLowerCase().includes(query)
+        (proj.project_name || '').toLowerCase().includes(query) ||
+        (proj.project_ticket_no || '').toLowerCase().includes(query)
       )
     },
     paginatedProjects() {
@@ -89,10 +90,26 @@ export default {
   },
   methods: {
     confirmDelete(project) {
-      showDeleteConfirmation(project.name, () => {
-        this.$store.dispatch('projects/deleteProject', project.id)
-        showSuccessNotification(`Project "${project.name}" has been deleted successfully`)
+      showDeleteConfirmation(project.project_name, () => {
+        this.$store.dispatch('projects/deleteProject', project.sk_project)
+        showSuccessNotification(`Project "${project.project_name}" has been deleted successfully`)
       })
+    }
+  },
+  mounted() {
+    // Load projects from backend
+    this.$store.dispatch('projects/fetchProjects')
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'project-list' })
     }
   },
   watch: {

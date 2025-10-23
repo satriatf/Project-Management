@@ -132,13 +132,31 @@ import userService from '@/common/user.service.js'
 export default {
   data() {
     return {
-      name: userService.getNama('nama'),
-      nik: userService.getNik('nik'),
-      role: userService.getRole('role'),
       NotifMessage: [],
       activeIndex: this.index,
       SubactiveIndex: ''
     };
+  },
+  computed: {
+    // User info (decrypted)
+    name() {
+      return userService.getNama() || 'User'
+    },
+    nik() {
+      return userService.getNik() || ''
+    },
+    role() {
+      const role = userService.getRole()
+      if (Array.isArray(role)) return role.join(', ')
+      return role || ''
+    },
+    isAuthenticated() {
+      return this.$store.state.auth?.isAuthenticated || !!sessionStorage.getItem('token')
+    },
+    // Notifications
+    unreadCount() {
+      return this.NotifMessage.filter(notif => notif.status === '0').length;
+    }
   },
   props: {
     breadcrumbs: {
@@ -169,7 +187,7 @@ export default {
     }
   },
   methods: {
-    async  logout() {
+    async logout() {
       const confirmed = await alertService.confirm({
         message: 'Apakah Anda Yakin Ingin Keluar?',
         confirmText: 'Keluar',
@@ -178,19 +196,14 @@ export default {
       });
 
       if(confirmed){
-        this.$loading.show();
-        this.$store.dispatch(CALL_SERVICE_ASYNC, {
-          token: localStorage.getItem('token'),
-          url: `${import.meta.env.VITE_BASE_URL_LOGIN}${import.meta.env.VITE_AUTH_LOGOUT}`,
-          body: { nik: this.nik }
-        }).then(() => {
-          sessionStorage.clear();
-          this.$router.push({ name: 'login' }).then(() => window.location.reload());
-        }).catch((error) => {
-          alertService.alert(error?.data?.message || error,'error')
-        }).finally(() => {
-          this.$loading.hide();
-        });
+        // Simple logout - clear all session data
+        sessionStorage.clear()
+        JwtService.destroyToken()
+        
+        // Navigate to login
+        this.$router.push({ name: 'login' }).then(() => {
+          window.location.reload()
+        })
       }
     },
     notification() {
@@ -245,11 +258,6 @@ export default {
     isSubActiveMenu(subPage) {
       return subPage === this.SubactiveIndex;
     },
-  },
-  computed: {
-    unreadCount() {
-      return this.NotifMessage.filter(notif => notif.status === '0').length;
-    }
   },
   mounted() {
     this.notification();

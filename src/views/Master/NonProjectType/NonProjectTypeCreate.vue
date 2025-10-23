@@ -14,11 +14,12 @@
       <div class="card-body">
         <form @submit.prevent="handleSubmit">
           <div class="mb-3">
-            <label class="form-label">Name<span class="text-danger">*</span></label>
+            <label class="form-label">Non-Project Type Name<span class="text-danger">*</span></label>
             <input 
               type="text" 
               class="form-control" 
               v-model="form.name" 
+              placeholder="Enter non-project type name"
               required>
           </div>
 
@@ -33,7 +34,6 @@
 </template>
 
 <script>
-import userService from '@/common/user.service.js'
 export default {
   name: 'NonProjectTypeCreate',
   data() {
@@ -44,16 +44,24 @@ export default {
     }
   },
   methods: {
-    handleSubmit() {
-      const newType = {
-        id: Date.now(),
-        name: this.form.name,
-        createdBy: userService.getNama() || 'Unknown',
-        createdDate: new Date().toISOString().split('T')[0],
-        isDeleted: false
+    async handleSubmit() {
+      try {
+        // Send only the name string, backend will auto-fill created_by
+        await this.$store.dispatch('master/addNonProjectType', this.form.name)
+        this.$router.push({ 
+          name: 'nonproject-type-list',
+          query: {
+            flash: `Non-Project Type \"${this.form.name}\" created successfully`,
+            type: 'success'
+          }
+        })
+      } catch (error) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: error.response?.data?.message || 'Failed to create non-project type'
+        })
       }
-      this.$store.dispatch('master/addNonProjectType', newType)
-      this.$router.push({ name: 'nonproject-type-list' })
     }
   }
 }

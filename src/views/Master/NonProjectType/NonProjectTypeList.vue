@@ -30,13 +30,6 @@
               <input type="text" class="form-control" placeholder="Search by name..." v-model="searchQuery">
             </div>
           </div>
-          <div class="col-md-6 text-end">
-            <button class="btn btn-outline-secondary">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M0 0h4v4H0V0zm0 6h4v4H0V6zm0 6h4v4H0v-4zM6 0h4v4H6V0zm0 6h4v4H6V6zm0 6h4v4H6v-4zm6-12h4v4h-4V0zm0 6h4v4h-4V6zm0 6h4v4h-4v-4z"/>
-              </svg>
-            </button>
-          </div>
         </div>
 
 
@@ -51,10 +44,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="type in paginatedTypes" :key="type.id">
+              <tr v-if="filteredTypes.length === 0">
+                <td colspan="4" class="text-center text-muted" style="padding: 3rem 0;">
+                  No non-project types found
+                </td>
+              </tr>
+              <tr v-else v-for="type in paginatedTypes" :key="type.id">
                 <td>{{ type.name }}</td>
-                <td>{{ type.createdBy }}</td>
-                <td>{{ formatDate(type.createdDate) }}</td>
+                <td>{{ type.createdBy || '-' }}</td>
+                <td>{{ formatDate(type.createdAt) }}</td>
                 <td>
                   <button
                     @click="confirmDelete(type)"
@@ -128,6 +126,22 @@ export default {
         this.$store.dispatch('master/softDeleteNonProjectType', type.id)
         showSuccessNotification(`Non-Project Type "${type.name}" has been deleted successfully`)
       })
+    }
+  },
+  mounted() {
+    // Load non-project types from backend
+    this.$store.dispatch('master/fetchNonProjectTypes')
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'nonproject-type-list' })
     }
   },
   watch: {

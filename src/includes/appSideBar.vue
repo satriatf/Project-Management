@@ -108,7 +108,9 @@ export default {
                 confirmButtonText: 'Logout!',
             }).then((result) => {
                 if (result && result.isConfirmed) {
-                    localStorage.clear()
+                    // Clear session and tokens
+                    sessionStorage.clear()
+                    // Navigate to login and force reload
                     this.$router.push({ name: 'login' }).then(() => {
                         window.location.reload()
                     })

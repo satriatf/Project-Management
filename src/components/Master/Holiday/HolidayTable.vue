@@ -12,12 +12,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="holiday in holidays" :key="holiday.id">
+        <tr v-if="holidays.length === 0">
+          <td colspan="6" class="text-center text-muted py-4">No holidays found</td>
+        </tr>
+        <tr v-else v-for="holiday in holidays" :key="holiday.id">
           <td><input type="checkbox" class="form-check-input"></td>
-          <td>{{ holiday.name }}</td>
+          <td>{{ holiday.description }}</td>
           <td>{{ formatDate(holiday.date) }}</td>
-          <td>{{ holiday.createdBy }}</td>
-          <td>{{ formatDate(holiday.createdDate) }}</td>
+          <td>{{ holiday.createdBy || '-' }}</td>
+          <td>{{ formatDate(holiday.createdAt) }}</td>
           <td>
             <div class="d-flex gap-2">
               <router-link 

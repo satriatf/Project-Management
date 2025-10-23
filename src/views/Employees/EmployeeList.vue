@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import EmployeeTable from '@/components/Employees/EmployeeTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
 import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
@@ -70,6 +70,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      // Show all employees (active and inactive)
       employees: 'employees/allEmployees'
     }),
     filteredEmployees() {
@@ -78,7 +79,7 @@ export default {
       }
       const query = this.searchQuery.toLowerCase()
       return this.employees.filter(emp => 
-        emp.name.toLowerCase().includes(query)
+        (emp.employee_name || '').toLowerCase().includes(query)
       )
     },
     paginatedEmployees() {
@@ -88,11 +89,39 @@ export default {
     }
   },
   methods: {
-    confirmDelete(employee) {
-      showDeleteConfirmation(employee.name, () => {
-        this.$store.dispatch('employees/deleteEmployee', employee.id)
-        showSuccessNotification(`Employee "${employee.name}" has been deleted successfully`)
+    ...mapActions('employees', ['fetchEmployees', 'deleteEmployee']),
+    async confirmDelete(employee) {
+      showDeleteConfirmation(employee.employee_name, async () => {
+        try {
+          await this.deleteEmployee(employee.sk_user)
+          showSuccessNotification(`Employee "${employee.employee_name}" has been deleted permanently`)
+          // Refresh the list to see the updated status
+          await this.fetchEmployees()
+        } catch (error) {
+          console.error('Delete employee error:', error)
+          this.$swal({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to delete employee. Please try again.'
+          })
+        }
       })
+    }
+  },
+  mounted() {
+    // Load from backend
+    this.fetchEmployees()
+    // Flash success after navigation
+    const msg = this.$route.query?.flash
+    if (msg) {
+      this.$swal({
+        icon: 'success',
+        title: 'Success!',
+        text: msg,
+        timer: 1500,
+        showConfirmButton: false
+      })
+      this.$router.replace({ name: 'employee-list' })
     }
   },
   watch: {

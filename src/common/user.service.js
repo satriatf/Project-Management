@@ -2,6 +2,7 @@ import { encryptData, decryptData } from './secureStorage'
 
 // Constants
 const ID_KEYS = {
+  id: 'id',
   nama: 'nama',
   nik: 'nik',
   jabatan: 'jabatan',
@@ -59,6 +60,7 @@ export function destroyKey(key) {
 }
 
 // Getter Functions
+export const getId = () => getDecryptedItem(ID_KEYS.id)
 export const getNama = () => getDecryptedItem(ID_KEYS.nama)
 export const getNik = () => getDecryptedItem(ID_KEYS.nik)
 export const getRole = () => getDecryptedItem(ID_KEYS.role, true)
@@ -73,6 +75,7 @@ export const getLoginDate = () => {
 }
 
 // Setter Functions
+export const saveId = (val) => setEncryptedItem(ID_KEYS.id, val)
 export const saveNama = (val) => setEncryptedItem(ID_KEYS.nama, val)
 export const saveNik = (val) => setEncryptedItem(ID_KEYS.nik, val)
 export const saveRole = (val) => setEncryptedItem(ID_KEYS.role, val, true)
@@ -85,6 +88,7 @@ export const saveLoginDate = (val) => setEncryptedItem(ID_KEYS.loginDate, new Da
 
 
 // Destroyer Functions
+export const destroyId = () => destroyKey(ID_KEYS.id)
 export const destroyNama = () => destroyKey(ID_KEYS.nama)
 export const destroyNik = () => destroyKey(ID_KEYS.nik)
 export const destroyRole = () => destroyKey(ID_KEYS.role)
@@ -97,13 +101,13 @@ export const destroyLoginDate = () => destroyKey(ID_KEYS.loginDate)
 
 // Default export for test & usage
 export default {
-  getNama, getNik, getRole, getIdJabatan, getIdLokasi, getOutype,
+  getId, getNama, getNik, getRole, getIdJabatan, getIdLokasi, getOutype,
   getUserLocation, getUserPosition,getLoginDate,
 
-  saveNama, saveNik, saveRole, saveIdLokasi, saveIdJabatan, saveOutype,
+  saveId, saveNama, saveNik, saveRole, saveIdLokasi, saveIdJabatan, saveOutype,
   saveUserLocation, saveUserPosition,saveLoginDate,
 
-  destroyNama, destroyNik, destroyRole, destroyIdLokasi,
+  destroyId, destroyNama, destroyNik, destroyRole, destroyIdLokasi,
   destroyIdJabatan, destroyOutype, destroyUserLocation, destroyUserPosition,destroyLoginDate,
 
   getDecryptedItem, setEncryptedItem, destroyKey

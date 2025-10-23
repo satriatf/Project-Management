@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Dashboard from '../views/Home.vue'
 import store from '@/store'
+import JwtService from '@/common/jwt.service'
 
 // Dashboard
 import DashboardView from '../views/Dashboard/Dashboard.vue'
@@ -165,26 +166,25 @@ const router = createRouter({
   ]
 })
 
-// Global navigation guard to prevent blank pages and ensure children mount
+// Add explicit /dashboard path to avoid 'No match for /dashboard'
+router.addRoute({ path: '/dashboard', redirect: { name: 'dashboard' } })
+
+// Global navigation guard (minimal logs)
 router.beforeEach((to, from, next) => {
-  // Simple auth check using localStorage 'user'
-  const user = localStorage.getItem('user')
-  const isAuthenticated = !!user
+  const token = JwtService.getToken()
+  const isAuthenticated = !!token
 
   // Redirect unknown routes to dashboard
   if (to.matched.length === 0) {
+    console.warn('Router: Unknown route, redirecting to dashboard')
     return next({ name: 'dashboard' })
   }
 
   // Prevent accessing login if already authenticated
-  if (to.name === 'login' && isAuthenticated) {
-    return next({ name: 'dashboard' })
-  }
+  if (to.name === 'login' && isAuthenticated) return next({ name: 'dashboard' })
 
   // Protect app routes when not authenticated
-  if (to.name !== 'login' && !isAuthenticated) {
-    return next({ name: 'login' })
-  }
+  if (to.name !== 'login' && !isAuthenticated) return next({ name: 'login' })
 
   next()
 })

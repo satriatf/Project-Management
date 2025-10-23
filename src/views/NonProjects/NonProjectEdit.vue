@@ -16,10 +16,10 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Created By<span class="text-danger">*</span></label>
-              <select class="form-select" v-model="form.createdBy" required>
-                <option value="">Select one</option>
-                <option v-for="emp in staffAndSHEmployees" :key="emp.id" :value="emp.name">
-                  {{ emp.name }}
+              <select class="form-select" v-model.number="form.createdById" required>
+                <option :value="null">Select</option>
+                <option v-for="emp in shAndStaff" :key="emp.sk_user" :value="emp.sk_user">
+                  {{ emp.employee_name }}
                 </option>
               </select>
             </div>
@@ -29,7 +29,8 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.ticketNo" 
+                v-model="form.ticketNo"
+                placeholder="Enter ticket number"
                 required>
             </div>
 
@@ -39,13 +40,14 @@
                 class="form-control" 
                 v-model="form.description" 
                 rows="3"
+                placeholder="Enter description"
                 required></textarea>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Type<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.type" required>
-                <option value="">Select one</option>
+                <option value="">Select</option>
                 <option v-for="type in nonProjectTypes" :key="type.id" :value="type.name">
                   {{ type.name }}
                 </option>
@@ -54,10 +56,10 @@
 
             <div class="col-md-6">
               <label class="form-label">Resolver PIC<span class="text-danger">*</span></label>
-              <select class="form-select" v-model="form.resolverPic" required>
-                <option value="">Select one</option>
-                <option v-for="emp in staffAndSHEmployees" :key="emp.id" :value="emp.name">
-                  {{ emp.name }}
+              <select class="form-select" v-model.number="form.resolverPicId" required>
+                <option :value="null">Select</option>
+                <option v-for="emp in shAndStaff" :key="emp.sk_user" :value="emp.sk_user">
+                  {{ emp.employee_name }}
                 </option>
               </select>
             </div>
@@ -67,13 +69,14 @@
               <textarea 
                 class="form-control" 
                 v-model="form.solution" 
-                rows="3"></textarea>
+                rows="3"
+                placeholder="Enter solution"></textarea>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Application<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.application" required>
-                <option value="">Select one</option>
+                  <option value="">Select</option>
                 <option v-for="app in applications" :key="app.id" :value="app.name">
                   {{ app.name }}
                 </option>
@@ -86,6 +89,7 @@
                 type="date" 
                 class="form-control" 
                 v-model="form.date" 
+                 lang="en"
                 required>
             </div>
 
@@ -141,11 +145,11 @@ export default {
     return {
       form: {
         id: null,
-        createdBy: '',
+        createdById: null,
         ticketNo: '',
         description: '',
         type: '',
-        resolverPic: '',
+        resolverPicId: null,
         solution: '',
         application: '',
         date: '',
@@ -160,13 +164,13 @@ export default {
       employees: 'employees/allEmployees',
       getNonProjectById: 'nonProjects/nonProjectById'
     }),
-    staffAndSHEmployees() {
-      return this.employees.filter(emp => 
-        (emp.level === 'Staff' || emp.level === 'SH') && emp.isActive === 'Active'
-      )
-    }
+    shAndStaff() { return this.employees.filter(e => (e.level==='SH' || e.level==='Staff') && e.is_active==='Active') }
   },
   methods: {
+    employeeIdByName(name){
+      const e = this.employees.find(x=>x.employee_name===name)
+      return e ? e.sk_user : null
+    },
     handleFileUpload(event) {
       const file = event.target.files[0]
       if (file) {
@@ -203,24 +207,64 @@ export default {
       this.form.attachment = null
       this.$refs.fileInput.value = ''
     },
-    handleSubmit() {
-      this.$store.dispatch('nonProjects/updateNonProject', this.form)
-      showSuccessNotification(`Ticket "${this.form.ticketNo}" has been updated successfully`)
-      this.$router.push({ name: 'nonproject-list' })
+    async handleSubmit() {
+      if (!this.form.resolverPicId) {
+        this.$swal({ icon: 'warning', title: 'Resolver PIC required', text: 'Please select a Resolver PIC' })
+        return
+      }
+
+      try {
+        const payload = {
+          ...this.form,
+          resolverPic: this.form.resolverPicId
+        }
+        
+        await this.$store.dispatch('nonProjects/updateNonProject', payload)
+        this.$router.push({ 
+          name: 'nonproject-list', 
+          query: { 
+            flash: `Ticket \"${payload.ticketNo}\" updated successfully`,
+            type: 'success'
+          }
+        })
+      } catch (error) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: error?.response?.data?.message || 'Failed to update Non-Project'
+        })
+      }
     },
     loadNonProject() {
       const nonProjectId = parseInt(this.$route.params.id)
       const nonProject = this.getNonProjectById(nonProjectId)
       if (nonProject) {
-        this.form = { ...nonProject }
+        const createdById = this.employeeIdByName(nonProject.createdBy) || nonProject.createdById
+        const resolverPicId = this.employeeIdByName(nonProject.resolverPic) || nonProject.resolverPicId
+        
+        this.form = { 
+          ...nonProject,
+          createdById,
+          resolverPicId
+        }
       } else {
-        showErrorNotification('Non-Project not found')
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Non-Project not found'
+        })
         this.$router.push({ name: 'nonproject-list' })
       }
     }
   },
   mounted() {
-    this.loadNonProject()
+    // Load required data
+    this.$store.dispatch('employees/fetchEmployees')
+    this.$store.dispatch('master/fetchNonProjectTypes')
+    this.$store.dispatch('master/fetchApplications')
+    this.$store.dispatch('nonProjects/fetchNonProjects').then(() => {
+      this.loadNonProject()
+    })
   }
 }
 </script>

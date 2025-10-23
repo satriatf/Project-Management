@@ -3,7 +3,6 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th><input type="checkbox" class="form-check-input"></th>
           <th>Created By</th>
           <th>No. Ticket</th>
           <th>Description</th>
@@ -13,25 +12,26 @@
           <th>Application</th>
           <th>Date</th>
           <th>Attachments</th>
-          <th></th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="np in nonProjects" :key="np.id">
-          <td><input type="checkbox" class="form-check-input"></td>
-          <td>{{ np.createdBy }}</td>
+        <tr v-if="nonProjects.length === 0">
+          <td colspan="10" class="text-center text-muted" style="padding: 3rem 0;">
+            No non-projects found
+          </td>
+        </tr>
+        <tr v-else v-for="np in nonProjects" :key="np.id">
+          <td>{{ np.createdByName || '-' }}</td>
           <td>{{ np.ticketNo }}</td>
           <td>{{ np.description }}</td>
           <td><span class="badge bg-secondary">{{ np.type }}</span></td>
-          <td>{{ np.resolverPic }}</td>
-          <td>{{ np.solution }}</td>
+          <td>{{ np.resolverPicNames || '-' }}</td>
+          <td>{{ np.solution || '-' }}</td>
           <td>{{ np.application }}</td>
           <td>{{ formatDate(np.date) }}</td>
           <td>
-            <span v-if="np.attachments && np.attachments.length > 0">
-              <a v-for="(file, idx) in np.attachments" :key="idx" :href="file.url" target="_blank">📎</a>
-            </span>
-            <span v-else>-</span>
+            <span class="badge bg-info">{{ np.attachmentsCount || (np.attachment ? 1 : 0) }} files</span>
           </td>
           <td>
             <div class="d-flex gap-2">

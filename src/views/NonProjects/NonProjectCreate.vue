@@ -16,10 +16,10 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Created By<span class="text-danger">*</span></label>
-              <select class="form-select" v-model="form.createdBy" required>
-                <option value="">Select one</option>
-                <option v-for="emp in staffAndSHEmployees" :key="emp.id" :value="emp.name">
-                  {{ emp.name }}
+              <select class="form-select" v-model.number="form.createdById" required>
+                <option :value="null">Select</option>
+                <option v-for="emp in shAndStaff" :key="emp.sk_user" :value="emp.sk_user">
+                  {{ emp.employee_name }}
                 </option>
               </select>
             </div>
@@ -29,7 +29,8 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.ticketNo" 
+                v-model="form.ticketNo"
+                placeholder="Enter ticket number"
                 required>
             </div>
 
@@ -39,13 +40,14 @@
                 class="form-control" 
                 v-model="form.description" 
                 rows="3"
+                placeholder="Enter description"
                 required></textarea>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Type<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.type" required>
-                <option value="">Select one</option>
+                <option value="">Select</option>
                 <option v-for="type in nonProjectTypes" :key="type.id" :value="type.name">
                   {{ type.name }}
                 </option>
@@ -54,10 +56,10 @@
 
             <div class="col-md-6">
               <label class="form-label">Resolver PIC<span class="text-danger">*</span></label>
-              <select class="form-select" v-model="form.resolverPic" required>
-                <option value="">Select one</option>
-                <option v-for="emp in staffAndSHEmployees" :key="emp.id" :value="emp.name">
-                  {{ emp.name }}
+              <select class="form-select" v-model.number="form.resolverPicId" required>
+                <option :value="null">Select</option>
+                <option v-for="emp in shAndStaff" :key="emp.sk_user" :value="emp.sk_user">
+                  {{ emp.employee_name }}
                 </option>
               </select>
             </div>
@@ -67,13 +69,14 @@
               <textarea 
                 class="form-control" 
                 v-model="form.solution" 
-                rows="3"></textarea>
+                rows="3"
+                placeholder="Enter solution"></textarea>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Application<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.application" required>
-                <option value="">Select one</option>
+                  <option value="">Select</option>
                 <option v-for="app in applications" :key="app.id" :value="app.name">
                   {{ app.name }}
                 </option>
@@ -86,6 +89,7 @@
                 type="date" 
                 class="form-control" 
                 v-model="form.date" 
+                 lang="en"
                 required>
             </div>
 
@@ -132,21 +136,21 @@
 <script>
 import { mapGetters } from 'vuex'
 import userService from '@/common/user.service.js'
-import { showSuccessNotification, showInfoNotification } from '@/common/notificationService'
+import { showInfoNotification } from '@/common/notificationService'
 
 export default {
   name: 'NonProjectCreate',
   data() {
     return {
       form: {
-        createdBy: userService.getNama() || '',
+        createdById: null,
+        resolverPicId: null,
         ticketNo: '',
-        description: '',
-        type: '',
-        resolverPic: '',
-        solution: '',
-        application: '',
-        date: new Date().toISOString().split('T')[0],
+        type: "",
+        application: "",
+        description: "",
+        solution: "",
+        date: "",
         attachment: null
       }
     }
@@ -155,13 +159,9 @@ export default {
     ...mapGetters({
       nonProjectTypes: 'master/activeNonProjectTypes',
       applications: 'master/activeApplications',
-      employees: 'employees/allEmployees'
+      employees: 'employees/activeEmployees'
     }),
-    staffAndSHEmployees() {
-      return this.employees.filter(emp => 
-        (emp.level === 'Staff' || emp.level === 'SH') && emp.isActive === 'Active'
-      )
-    }
+    shAndStaff() { return this.employees.filter(e => e.level==='SH' || e.level==='Staff') }
   },
   methods: {
     handleFileUpload(event) {
@@ -192,23 +192,71 @@ export default {
       this.form.attachment = null
       this.$refs.fileInput.value = ''
     },
-    handleSubmit() {
-      const newNonProject = {
-        id: Date.now(),
-        ...this.form
+    async handleSubmit() {
+      if (!this.form.resolverPicId) {
+        this.$swal({ icon:'warning', title:'Resolver PIC required', text:'Please select a Resolver PIC' })
+        return
       }
-      this.$store.dispatch('nonProjects/addNonProject', newNonProject)
-      showSuccessNotification(`Ticket "${newNonProject.ticketNo}" has been created successfully`)
-      this.$router.push({ name: 'nonproject-list' })
+      
+      const payload = {
+        createdById: this.form.createdById || userService.getId(),
+        resolverId: this.form.resolverPicId,  // Send ID directly as number
+        noTiket: this.form.ticketNo,
+        deskripsi: this.form.description,
+        type: this.form.type,
+        solusi: this.form.solution || '',
+        application: this.form.application,
+        tanggal: this.form.date,
+        attachmentsJson: this.form.attachment ? JSON.stringify(this.form.attachment) : null,
+        attachmentsCount: this.form.attachment ? 1 : 0
+      }
+      
+      try {
+        await this.$store.dispatch('nonProjects/addNonProject', payload)
+        localStorage.removeItem('nonProjectDraft')
+        
+        // Reset form to initial state
+        this.form = {
+          createdById: null,
+          resolverPicId: null,
+          ticketNo: '',
+          type: "",
+          application: "",
+          description: "",
+          solution: "",
+          date: "",
+          attachment: null
+        }
+        if (this.$refs.fileInput) {
+          this.$refs.fileInput.value = ''
+        }
+        
+        this.$router.push({ 
+          name: 'nonproject-list',
+          query: {
+            flash: `Ticket \"${payload.noTiket}\" created successfully`,
+            type: 'success'
+          }
+        })
+      } catch (err) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: err?.response?.data?.message || err?.message || 'Failed to create Non-Project'
+        })
+      }
     },
     handleDraft() {
-      const draft = { ...this.form, id: Date.now() }
-      localStorage.setItem('nonProjectDraft', JSON.stringify(draft))
-      showInfoNotification('Draft saved. You can continue editing now.')
-      this.$router.push({ name: 'nonproject-edit', params: { id: draft.id } })
+      localStorage.setItem('nonProjectDraft', JSON.stringify(this.form))
+      showInfoNotification('Draft saved successfully')
     }
   },
   mounted() {
+    // Load required data
+    this.$store.dispatch('employees/fetchEmployees')
+    this.$store.dispatch('master/fetchNonProjectTypes')
+    this.$store.dispatch('master/fetchApplications')
+    // Load draft if exists
     const draft = localStorage.getItem('nonProjectDraft')
     if (draft) {
       const parsed = JSON.parse(draft)
@@ -225,5 +273,16 @@ export default {
 
 .text-danger {
   color: #dc3545 !important;
+}
+
+.resolver-tags { 
+  display: flex; flex-wrap: wrap; gap: .5rem; 
+}
+.tag { 
+  background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 16px; padding: .25rem .5rem; 
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .9rem;
+}
+.tag-close { 
+  border: none; background: transparent; color: #dc3545; font-size: 1rem; line-height: 1; cursor: pointer; 
 }
 </style>

@@ -19,7 +19,8 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.ticketNo" 
+                v-model="form.ticketNo"
+                placeholder="Enter project ticket number"
                 required>
             </div>
 
@@ -28,14 +29,15 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.name" 
+                v-model="form.name"
+                placeholder="Enter project name"
                 required>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Project Status<span class="text-danger">*</span></label>
               <select class="form-select" v-model="form.status" required>
-                <option value="">Select status</option>
+                <option value="">Select</option>
                 <option v-for="status in projectStatuses" :key="status.id" :value="status.name">
                   {{ status.name }}
                 </option>
@@ -44,22 +46,35 @@
 
             <div class="col-md-6">
               <label class="form-label">Technical Lead<span class="text-danger">*</span></label>
-              <select class="form-select" v-model="form.technicalLead" required>
-                <option value="">Select one</option>
-                <option v-for="emp in shEmployees" :key="emp.id" :value="emp.name">
-                  {{ emp.name }}
+              <select class="form-select" v-model.number="form.technicalLeadId" required>
+                <option :value="null">Select</option>
+                <option v-for="emp in shEmployees" :key="emp.sk_user" :value="emp.sk_user">
+                  {{ emp.employee_name }}
                 </option>
               </select>
             </div>
 
             <div class="col-md-12">
-              <label class="form-label">PIC (Person In Charge)<span class="text-danger">*</span></label>
-              <select class="form-select" v-model="form.pic" multiple size="5" required>
-                <option v-for="emp in staffEmployees" :key="emp.id" :value="emp.name">
-                  {{ emp.name }}
-                </option>
-              </select>
-              <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+              <label class="form-label">PIC<span class="text-danger">*</span></label>
+              <div class="row g-2 mb-2">
+                <div class="col-10">
+                  <select class="form-select form-select-sm" v-model.number="selectedPICCandidate">
+                    <option :value="null">Select</option>
+                    <option v-for="emp in availablePICEmployees" :key="emp.sk_user" :value="emp.sk_user">
+                      {{ emp.employee_name }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-2">
+                  <button type="button" class="btn btn-warning btn-sm w-100" @click="addPIC">Add</button>
+                </div>
+              </div>
+              <div v-if="form.picIds.length > 0">
+                <span v-for="id in form.picIds" :key="id" class="badge bg-warning text-dark me-2 mb-2 p-2">
+                  {{ employeeNameById(id) }}
+                  <button type="button" class="btn-close btn-close-white ms-2" @click="removePIC(id)" aria-label="Remove"></button>
+                </span>
+              </div>
             </div>
 
             <div class="col-md-6">
@@ -68,7 +83,7 @@
                 type="date" 
                 class="form-control" 
                 v-model="form.startDate"
-                @change="calculateTotalDays"
+                 lang="en"
                 required>
             </div>
 
@@ -78,17 +93,19 @@
                 type="date" 
                 class="form-control" 
                 v-model="form.endDate"
-                @change="calculateTotalDays"
+                 lang="en"
                 required>
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Total Days</label>
+              <label class="form-label">Total Days<span class="text-danger">*</span></label>
               <input 
                 type="number" 
                 class="form-control" 
-                v-model="form.totalDays" 
-                readonly>
+                v-model.number="form.totalDays"
+                placeholder="Enter total days"
+                min="0"
+                required>
             </div>
 
             <div class="col-md-6">
@@ -100,6 +117,7 @@
                   v-model="form.percentDone" 
                   min="0"
                   max="100"
+                  placeholder="0"
                   required>
                 <span class="input-group-text">%</span>
               </div>
@@ -119,7 +137,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { showSuccessNotification, showInfoNotification } from '@/common/notificationService'
+import { showInfoNotification } from '@/common/notificationService'
 
 export default {
   name: 'ProjectCreate',
@@ -129,13 +147,14 @@ export default {
         ticketNo: '',
         name: '',
         status: '',
-        technicalLead: '',
-        pic: [],
+        technicalLeadId: null,
+        picIds: [],
         startDate: '',
         endDate: '',
         totalDays: 0,
         percentDone: 0
-      }
+      },
+      selectedPICCandidate: null
     }
   },
   computed: {
@@ -144,13 +163,31 @@ export default {
       employees: 'employees/allEmployees'
     }),
     shEmployees() {
-      return this.employees.filter(emp => emp.level === 'SH' && emp.isActive === 'Active')
+      return this.employees.filter(emp => emp.level === 'SH' && emp.is_active === 'Active')
     },
     staffEmployees() {
-      return this.employees.filter(emp => emp.level === 'Staff' && emp.isActive === 'Active')
+      return this.employees.filter(emp => emp.level === 'Staff' && emp.is_active === 'Active')
+    },
+    availablePICEmployees() {
+      return this.staffEmployees.filter(emp => !this.form.picIds.includes(emp.sk_user))
     }
   },
   methods: {
+    employeeNameById(id) {
+      const emp = this.employees.find(e => e.sk_user === id)
+      return emp ? emp.employee_name : id
+    },
+    addPIC() {
+      const id = this.selectedPICCandidate
+      if (!id) return
+      if (!this.form.picIds.includes(id)) {
+        this.form.picIds.push(id)
+      }
+      this.selectedPICCandidate = null
+    },
+    removePIC(id) {
+      this.form.picIds = this.form.picIds.filter(x => x !== id)
+    },
     calculateTotalDays() {
       if (this.form.startDate && this.form.endDate) {
         const start = new Date(this.form.startDate)
@@ -160,15 +197,62 @@ export default {
         this.form.totalDays = diffDays
       }
     },
-    handleSubmit() {
-      const newProject = {
-        id: Date.now(),
-        ...this.form
+    async handleSubmit() {
+      // Validation
+      if (!this.form.technicalLeadId) {
+        this.$swal({ icon: 'warning', title: 'Technical Lead required', text: 'Please select a Technical Lead' })
+        return
       }
-      this.$store.dispatch('projects/addProject', newProject)
-      localStorage.removeItem('projectDraft')
-      showSuccessNotification(`Project "${newProject.name}" has been created successfully`)
-      this.$router.push({ name: 'project-list' })
+      if (this.form.picIds.length === 0) {
+        this.$swal({ icon: 'warning', title: 'PIC required', text: 'Please select at least one PIC' })
+        return
+      }
+
+      try {
+        // Convert to backend field names
+        const payload = {
+          project_ticket_no: this.form.ticketNo,
+          project_name: this.form.name,
+          project_status: this.form.status,
+          technical_lead: this.employeeNameById(this.form.technicalLeadId),
+          pics_json: JSON.stringify(this.form.picIds.map(id => this.employeeNameById(id))),
+          start_date: this.form.startDate,
+          end_date: this.form.endDate,
+          total_day: Number(this.form.totalDays) || 0,
+          percent_done: Number(this.form.percentDone) || 0
+        }
+        
+        await this.$store.dispatch('projects/addProject', payload)
+        localStorage.removeItem('projectDraft')
+        
+        // Reset form to initial state
+        this.form = {
+          ticketNo: '',
+          name: '',
+          status: '',
+          technicalLeadId: null,
+          picIds: [],
+          startDate: '',
+          endDate: '',
+          totalDays: 0,
+          percentDone: 0
+        }
+        this.selectedPICCandidate = null
+        
+        this.$router.push({ 
+          name: 'project-list', 
+          query: { 
+            flash: `Project \"${payload.project_name}\" created successfully`,
+            type: 'success'
+          }
+        })
+      } catch (error) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error!',
+          text: error?.response?.data?.message || 'Failed to create project'
+        })
+      }
     },
     handleDraft() {
       localStorage.setItem('projectDraft', JSON.stringify(this.form))
@@ -176,6 +260,10 @@ export default {
     }
   },
   mounted() {
+    // Load employees and statuses
+    this.$store.dispatch('employees/fetchEmployees')
+    this.$store.dispatch('master/fetchProjectStatuses')
+    // Load draft if exists
     const draft = localStorage.getItem('projectDraft')
     if (draft) {
       this.form = JSON.parse(draft)
