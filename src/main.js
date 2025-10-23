@@ -16,8 +16,6 @@ import GlobalLoading from '@/includes/loading.vue'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-// Import your custom global JavaScript files
-import '@/assets/js/global/global.min.js'
 // permission
 import permissionDirective from "@/directives/permission";
 const app = createApp(App)

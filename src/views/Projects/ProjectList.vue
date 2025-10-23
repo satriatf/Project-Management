@@ -53,7 +53,7 @@
 import { mapGetters } from 'vuex'
 import ProjectTable from '@/components/Projects/ProjectTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
-import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'ProjectList',

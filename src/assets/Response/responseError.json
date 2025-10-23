@@ -1,9 +1,0 @@
-
-{
-    "400": "NIK atau Kata Sandi yang dimasukan tidak sesuai.",
-    "401": "Anda tidak memiliki otorisasi. Silakan login kembali.",
-    "403": "Anda tidak memiliki hak akses.",
-    "404": "Data tidak ditemukan.",
-    "500": "Terjadi kesalahan pada server. Silakan coba lagi nanti."
-  }
-  

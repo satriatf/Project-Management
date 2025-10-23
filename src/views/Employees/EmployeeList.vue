@@ -53,7 +53,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import EmployeeTable from '@/components/Employees/EmployeeTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
-import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'EmployeeList',
