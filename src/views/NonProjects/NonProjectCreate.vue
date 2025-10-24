@@ -199,28 +199,53 @@ export default {
         return
       }
       
-      const payload = {
-        createdById: this.form.createdById || userService.getId(),
-        resolverId: this.form.resolverId,  // Send ID directly as number
-        noTiket: this.form.noTiket,
-        deskripsi: this.form.description,
-        type: this.form.type,
-        solusi: this.form.solution || '',
-        application: this.form.application,
-        tanggal: this.form.date,
-        attachmentsJson: this.form.attachment ? JSON.stringify(this.form.attachment) : null,
-        attachmentsCount: this.form.attachment ? 1 : 0
-      }
-      
       try {
+        let attachmentData = null
+        
+        // Upload file first if there's an attachment
+        if (this.form.attachment && this.form.attachment.data) {
+          const formData = new FormData()
+          formData.append('file', this.form.attachment.data)
+          
+          try {
+            const response = await fetch('http://localhost:8080/api/non-projects/upload', {
+              method: 'POST',
+              body: formData
+            })
+            
+            if (!response.ok) {
+              throw new Error('File upload failed')
+            }
+            
+            const result = await response.json()
+            attachmentData = result.data // File info from backend
+          } catch (uploadError) {
+            showErrorNotification('Failed to upload file: ' + uploadError.message)
+            return
+          }
+        }
+        
+        const payload = {
+          createdById: this.form.createdById || userService.getId(),
+          resolverId: this.form.resolverId,
+          noTiket: this.form.noTiket,
+          deskripsi: this.form.description,
+          type: this.form.type,
+          solusi: this.form.solution || '',
+          application: this.form.application,
+          tanggal: this.form.date,
+          attachmentsJson: attachmentData ? JSON.stringify(attachmentData) : null,
+          attachmentsCount: attachmentData ? 1 : 0
+        }
+        
         await this.$store.dispatch('nonProjects/addNonProject', payload)
         localStorage.removeItem('nonProjectDraft')
         
         // Reset form to initial state
         this.form = {
           createdById: null,
-          resolverPicId: null,
-          ticketNo: '',
+          resolverId: null,
+          noTiket: '',
           type: "",
           application: "",
           description: "",
@@ -232,11 +257,11 @@ export default {
           this.$refs.fileInput.value = ''
         }
         
-          showSuccessNotification(`Ticket "${payload.noTiket}" has been created successfully`)
-          this.$router.push({ name: 'nonproject-list' })
+        showSuccessNotification(`Ticket "${payload.noTiket}" has been created successfully`)
+        this.$router.push({ name: 'nonproject-list' })
       } catch (err) {
-          const errorMsg = err?.response?.data?.message || err?.message || 'Failed to create Non-Project'
-          showErrorNotification(errorMsg)
+        const errorMsg = err?.response?.data?.message || err?.message || 'Failed to create Non-Project'
+        showErrorNotification(errorMsg)
       }
     },
     handleDraft() {

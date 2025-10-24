@@ -23,9 +23,9 @@
           <td>{{ employee.employee_nik || '-' }}</td>
           <td>{{ employee.employee_name }}</td>
           <td>{{ employee.employee_email }}</td>
-          <td><span class="badge bg-secondary">{{ employee.level || '-' }}</span></td>
+          <td><span class="badge badge-level">{{ employee.level || '-' }}</span></td>
           <td>
-            <span class="badge" :class="getStatusClass(employee.is_active)">
+            <span class="badge badge-status" :class="getStatusClass(employee.is_active)">
               {{ employee.is_active === 'Active' ? 'Active' : 'Inactive' }}
             </span>
           </td>
@@ -78,7 +78,7 @@ export default {
       return new Date(date).toLocaleDateString('en-US', options)
     },
     getStatusClass(isActive) {
-      return (isActive === 'Active') ? 'bg-success' : 'bg-danger'
+      return (isActive === 'Active') ? 'badge-active' : 'badge-inactive'
     },
     handleDelete(employee) {
       this.$emit('delete', employee)
@@ -86,3 +86,45 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Badge styling */
+.badge-level {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-status {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-active {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.badge-inactive {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+/* Action buttons */
+.btn-link {
+  transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+  transform: scale(1.1);
+}
+</style>

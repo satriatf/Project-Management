@@ -199,31 +199,50 @@ export default {
       }
       
       try {
-        const link = document.createElement('a')
+        let downloadUrl = null
         
         // If attachment has data (newly uploaded file)
         if (this.form.attachment.data) {
-          link.href = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
+          downloadUrl = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
+          
+          // Download using blob URL
+          const link = document.createElement('a')
+          link.href = downloadUrl
+          link.download = this.form.attachment.name || 'download'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          
+          showSuccessNotification('File download started')
         } 
-        // If attachment only has url (existing file from backend)
+        // If attachment from backend, use fetch to download
         else if (this.form.attachment.url) {
-          link.href = this.form.attachment.url
-        }
-        // If attachment has name but no url/data, try to construct url
-        else if (this.form.attachment.name) {
-          // Assuming backend serves files from /api/files/{filename}
-          link.href = `/api/files/${this.form.attachment.name}`
+          fetch(this.form.attachment.url)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('File not found on server')
+              }
+              return response.blob()
+            })
+            .then(blob => {
+              const url = window.URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = this.form.attachment.name || 'download'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+              window.URL.revokeObjectURL(url)
+              
+              showSuccessNotification('File downloaded successfully')
+            })
+            .catch(error => {
+              console.error('Download error:', error)
+              showErrorNotification('File not found or cannot be downloaded', 'Download Failed')
+            })
         } else {
           showErrorNotification('File URL not found', 'Download Failed')
-          return
         }
-        
-        link.download = this.form.attachment.name || 'download'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        
-        showSuccessNotification('File download started')
       } catch (error) {
         console.error('Download error:', error)
         showErrorNotification('Failed to download file', 'Download Error')
@@ -241,19 +260,22 @@ export default {
         // If attachment has data (newly uploaded file)
         if (this.form.attachment.data) {
           previewUrl = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
-        }
-        // If attachment only has url (existing file from backend)
-        else if (this.form.attachment.url) {
-          previewUrl = this.form.attachment.url
-        }
-        // If attachment has name but no url/data, try to construct url
-        else if (this.form.attachment.name) {
-          // Assuming backend serves files from /api/files/{filename}
-          previewUrl = `/api/files/${this.form.attachment.name}`
-        }
-        
-        if (previewUrl) {
           window.open(previewUrl, '_blank')
+        }
+        // If attachment from backend
+        else if (this.form.attachment.url) {
+          // Check if file exists first
+          fetch(this.form.attachment.url, { method: 'HEAD' })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('File not found on server')
+              }
+              window.open(this.form.attachment.url, '_blank')
+            })
+            .catch(error => {
+              console.error('Preview error:', error)
+              showErrorNotification('File not found on server', 'Preview Failed')
+            })
         } else {
           showErrorNotification('File URL not found', 'Preview Failed')
         }
@@ -273,20 +295,53 @@ export default {
       }
 
       try {
+        let attachmentData = null
+        
+        // Upload new file if user uploaded one
+        if (this.form.attachment && this.form.attachment.data) {
+          const formData = new FormData()
+          formData.append('file', this.form.attachment.data)
+          
+          try {
+            const response = await fetch('http://localhost:8080/api/non-projects/upload', {
+              method: 'POST',
+              body: formData
+            })
+            
+            if (!response.ok) {
+              throw new Error('File upload failed')
+            }
+            
+            const result = await response.json()
+            attachmentData = result.data
+          } catch (uploadError) {
+            showErrorNotification('Failed to upload file: ' + uploadError.message)
+            return
+          }
+        } 
+        // Keep existing attachment if no new file uploaded
+        else if (this.form.attachment && !this.form.attachment.data) {
+          attachmentData = this.form.attachment
+        }
+        
         const payload = {
           id: this.form.id,
           createdBy: this.form.createdById,
           createdById: this.form.createdById,
           ticketNo: this.form.noTiket,
           noTiket: this.form.noTiket,
+          deskripsi: this.form.description,
           description: this.form.description,
           type: this.form.type,
           resolverPic: this.form.resolverId,
           resolverId: this.form.resolverId,
+          solusi: this.form.solution,
           solution: this.form.solution,
           application: this.form.application,
+          tanggal: this.form.date,
           date: this.form.date,
-          attachment: this.form.attachment
+          attachmentsJson: attachmentData ? JSON.stringify(attachmentData) : null,
+          attachmentsCount: attachmentData ? 1 : 0
         }
         
         await this.$store.dispatch('nonProjects/updateNonProject', payload)
@@ -316,6 +371,22 @@ export default {
           resolverId = this.employeeIdByName(resolverId)
         }
         
+        // Process attachment - add URL if attachment exists
+        let attachment = null
+        if (nonProject.attachment) {
+          // Parse if it's a JSON string
+          const attachmentData = typeof nonProject.attachment === 'string' 
+            ? JSON.parse(nonProject.attachment) 
+            : nonProject.attachment
+            
+          attachment = {
+            ...attachmentData,
+            // Add URL to access file from backend - use the url from backend if exists
+            url: attachmentData.url || 
+              (attachmentData.name ? `http://localhost:8080/api/non-projects/files/${attachmentData.name}` : null)
+          }
+        }
+        
         this.form = { 
           id: nonProject.id,
           createdById: createdById || null,
@@ -326,7 +397,7 @@ export default {
           solution: nonProject.solution || '',
           application: nonProject.application || '',
           date: nonProject.date || '',
-          attachment: nonProject.attachment || null
+          attachment: attachment
         }
       } else {
         showErrorNotification('Non-Project not found')

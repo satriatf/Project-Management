@@ -24,12 +24,16 @@
         <tr v-else v-for="project in projects" :key="project.sk_project">
           <td style="white-space: nowrap;">{{ project.project_ticket_no }}</td>
           <td style="min-width: 200px; white-space: normal;">{{ project.project_name }}</td>
-          <td style="white-space: nowrap;"><span class="badge bg-secondary">{{ project.project_status }}</span></td>
+          <td style="white-space: nowrap;">
+            <span class="badge badge-status" :class="getStatusBadgeClass(project.project_status)">
+              {{ project.project_status }}
+            </span>
+          </td>
           <td style="white-space: nowrap;">{{ project.technical_lead }}</td>
           <td style="min-width: 250px;">
             <div class="pic-list" v-if="parsePicsArray(project.pics_json).length > 0">
               <div v-for="(pic, index) in parsePicsArray(project.pics_json)" :key="index" class="pic-item">
-                {{ index + 1 }}. {{ pic }}
+                <span class="pic-number">{{ index + 1 }}.</span> <span class="pic-name">{{ pic }}</span>
               </div>
             </div>
             <span v-else>-</span>
@@ -121,6 +125,14 @@ export default {
       if (percent >= 25) return 'bg-warning'
       return 'bg-danger'
     },
+    getStatusBadgeClass(status) {
+      const statusLower = status?.toLowerCase() || ''
+      if (statusLower.includes('done') || statusLower.includes('complete')) return 'badge-done'
+      if (statusLower.includes('progress') || statusLower.includes('ongoing')) return 'badge-progress'
+      if (statusLower.includes('pentest') || statusLower.includes('uat')) return 'badge-testing'
+      if (statusLower.includes('cancel') || statusLower.includes('hold')) return 'badge-cancelled'
+      return 'badge-default'
+    },
     handleDelete(project) {
       this.$emit('delete', project)
     }
@@ -131,6 +143,14 @@ export default {
 <style scoped>
 .progress {
   background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  font-size: 11px;
+  font-weight: 600;
+  transition: width 0.6s ease;
 }
 
 .pic-list {
@@ -143,5 +163,59 @@ export default {
   line-height: 1.5;
   white-space: normal;
   word-wrap: break-word;
+}
+
+.pic-number {
+  color: #000000;
+  font-weight: 500;
+}
+
+.pic-name {
+  color: #000000;
+  font-weight: 400;
+}
+
+/* Badge styling */
+.badge-status {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-done {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.badge-progress {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.badge-testing {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.badge-cancelled {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.badge-default {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+/* Action buttons */
+.btn-link {
+  transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+  transform: scale(1.1);
 }
 </style>

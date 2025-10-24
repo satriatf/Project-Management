@@ -1,18 +1,44 @@
 /* Component Table Styles - Shared across all table components */
 
+/* Table Styles */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 /* Table Header Styles */
 .table th {
-  font-weight: 600;
-  color: #495057;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  font-weight: 700;
+  color: #1f2937;
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
   white-space: nowrap;
   vertical-align: middle;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 16px 12px;
 }
 
 /* Table Data Cells */
 .table td {
   vertical-align: middle;
+  padding: 14px 12px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* Table Row Hover Effect */
+.table-hover tbody tr {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f9fafb;
+  transform: scale(1.001);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Link Button Styles */
