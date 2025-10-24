@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import { showInfoNotification } from '@/common/notificationService'
+import { showInfoNotification, showSuccessNotification, showErrorNotification } from '@/common/notificationService'
 
 export default {
   name: 'EmployeeCreate',
@@ -145,20 +145,11 @@ export default {
         const newEmployee = { ...this.form }
         await this.$store.dispatch('employees/addEmployee', newEmployee)
         localStorage.removeItem('employeeDraft')
-        this.$router.push({ 
-          name: 'employee-list', 
-          query: { 
-            flash: `Employee \"${newEmployee.name}\" created successfully`,
-            type: 'success'
-          }
-        })
+        showSuccessNotification(`Employee "${newEmployee.name}" has been created successfully`)
+        this.$router.push({ name: 'employee-list' })
       } catch (error) {
         console.error('Create employee error:', error)
-        this.$swal({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to create employee. Please check your input and try again.'
-        })
+        showErrorNotification('Failed to create employee. Please check your input and try again.')
       }
     },
     handleDraft() {

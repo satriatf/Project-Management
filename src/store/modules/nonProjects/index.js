@@ -81,15 +81,13 @@ const actions = {
   async updateNonProject({ commit, dispatch }, nonProject) {
     const payload = {
       createdById: nonProject.createdById || nonProject.createdBy,
-      resolverId: nonProject.resolverPic,
-      resolverPicsJson: nonProject.resolverPicsJson || (Array.isArray(nonProject.resolverPics) ? JSON.stringify(nonProject.resolverPics) : undefined),
-      tlId: nonProject.tlId || null,
-      noTiket: nonProject.ticketNo,
-      deskripsi: nonProject.description,
+      resolverId: nonProject.resolverId || nonProject.resolverPic,
+      noTiket: nonProject.noTiket || nonProject.ticketNo,
+      deskripsi: nonProject.description || nonProject.deskripsi,
       type: nonProject.type,
-      solusi: nonProject.solution || '',
+      solusi: nonProject.solution || nonProject.solusi || '',
       application: nonProject.application,
-      tanggal: nonProject.date,
+      tanggal: nonProject.date || nonProject.tanggal,
       attachmentsJson: nonProject.attachment ? JSON.stringify(nonProject.attachment) : null,
       attachmentsCount: nonProject.attachment ? 1 : 0
     }

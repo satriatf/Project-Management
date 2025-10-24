@@ -22,14 +22,21 @@
           </td>
         </tr>
         <tr v-else v-for="project in projects" :key="project.sk_project">
-          <td>{{ project.project_ticket_no }}</td>
-          <td>{{ project.project_name }}</td>
-          <td><span class="badge bg-secondary">{{ project.project_status }}</span></td>
-          <td>{{ project.technical_lead }}</td>
-          <td>{{ parsePics(project.pics_json) }}</td>
-          <td>{{ formatDate(project.start_date) }}</td>
-          <td>{{ formatDate(project.end_date) }}</td>
-          <td>{{ project.total_day || 0 }}</td>
+          <td style="white-space: nowrap;">{{ project.project_ticket_no }}</td>
+          <td style="min-width: 200px; white-space: normal;">{{ project.project_name }}</td>
+          <td style="white-space: nowrap;"><span class="badge bg-secondary">{{ project.project_status }}</span></td>
+          <td style="white-space: nowrap;">{{ project.technical_lead }}</td>
+          <td style="min-width: 250px;">
+            <div class="pic-list" v-if="parsePicsArray(project.pics_json).length > 0">
+              <div v-for="(pic, index) in parsePicsArray(project.pics_json)" :key="index" class="pic-item">
+                {{ index + 1 }}. {{ pic }}
+              </div>
+            </div>
+            <span v-else>-</span>
+          </td>
+          <td style="white-space: nowrap;">{{ formatDate(project.start_date) }}</td>
+          <td style="white-space: nowrap;">{{ formatDate(project.end_date) }}</td>
+          <td style="white-space: nowrap;">{{ project.total_day || 0 }}</td>
           <td>
             <div class="progress" style="height: 20px; min-width: 80px;">
               <div 
@@ -96,6 +103,15 @@ export default {
         return '-'
       }
     },
+    parsePicsArray(picsJson) {
+      if (!picsJson) return []
+      try {
+        const pics = JSON.parse(picsJson)
+        return Array.isArray(pics) ? pics : []
+      } catch {
+        return []
+      }
+    },
     getProgressBarClass(percent) {
       if (percent >= 100) return 'bg-success'
       if (percent >= 75) return 'bg-info'
@@ -117,6 +133,7 @@ export default {
   background-color: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .btn-link {
@@ -135,9 +152,26 @@ export default {
 .badge {
   font-weight: 500;
   padding: 0.35em 0.65em;
+  white-space: nowrap;
 }
 
 .progress {
   background-color: #e9ecef;
+}
+
+.pic-list {
+  text-align: left;
+  min-width: 250px;
+}
+
+.pic-item {
+  padding: 2px 0;
+  line-height: 1.5;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.table td {
+  vertical-align: middle;
 }
 </style>

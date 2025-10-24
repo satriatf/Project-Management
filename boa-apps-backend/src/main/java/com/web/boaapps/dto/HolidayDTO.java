@@ -1,4 +1,4 @@
-package main.java.com.web.boaapps.dto;
+package com.web.boaapps.dto;
 
 import lombok.*;
 import java.time.LocalDate;

@@ -120,6 +120,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { showSuccessNotification, showErrorNotification } from '@/common/notificationService'
 import Swal from 'sweetalert2'
 
 export default {

@@ -29,7 +29,7 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.ticketNo"
+                v-model="form.noTiket"
                 placeholder="Enter ticket number"
                 required>
             </div>
@@ -56,7 +56,7 @@
 
             <div class="col-md-6">
               <label class="form-label">Resolver PIC<span class="text-danger">*</span></label>
-              <select class="form-select" v-model.number="form.resolverPicId" required>
+              <select class="form-select" v-model.number="form.resolverId" required>
                 <option :value="null">Select</option>
                 <option v-for="emp in shAndStaff" :key="emp.sk_user" :value="emp.sk_user">
                   {{ emp.employee_name }}
@@ -137,6 +137,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
 import Swal from 'sweetalert2'
 
 export default {
@@ -146,10 +147,10 @@ export default {
       form: {
         id: null,
         createdById: null,
-        ticketNo: '',
+        noTiket: '',
         description: '',
         type: '',
-        resolverPicId: null,
+        resolverId: null,
         solution: '',
         application: '',
         date: '',
@@ -191,16 +192,73 @@ export default {
       return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
     },
     downloadFile() {
-      if (this.form.attachment && this.form.attachment.data) {
+      if (!this.form.attachment) {
+        showWarningNotification('No file to download', 'No Attachment')
+        return
+      }
+      
+      try {
         const link = document.createElement('a')
-        link.href = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
-        link.download = this.form.attachment.name
+        
+        // If attachment has data (newly uploaded file)
+        if (this.form.attachment.data) {
+          link.href = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
+        } 
+        // If attachment only has url (existing file from backend)
+        else if (this.form.attachment.url) {
+          link.href = this.form.attachment.url
+        }
+        // If attachment has name but no url/data, try to construct url
+        else if (this.form.attachment.name) {
+          // Assuming backend serves files from /api/files/{filename}
+          link.href = `/api/files/${this.form.attachment.name}`
+        } else {
+          showErrorNotification('File URL not found', 'Download Failed')
+          return
+        }
+        
+        link.download = this.form.attachment.name || 'download'
+        document.body.appendChild(link)
         link.click()
+        document.body.removeChild(link)
+        
+        showSuccessNotification('File download started')
+      } catch (error) {
+        console.error('Download error:', error)
+        showErrorNotification('Failed to download file', 'Download Error')
       }
     },
     previewFile() {
-      if (this.form.attachment && this.form.attachment.url) {
-        window.open(this.form.attachment.url, '_blank')
+      if (!this.form.attachment) {
+        showWarningNotification('No file to preview', 'No Attachment')
+        return
+      }
+      
+      try {
+        let previewUrl = null
+        
+        // If attachment has data (newly uploaded file)
+        if (this.form.attachment.data) {
+          previewUrl = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
+        }
+        // If attachment only has url (existing file from backend)
+        else if (this.form.attachment.url) {
+          previewUrl = this.form.attachment.url
+        }
+        // If attachment has name but no url/data, try to construct url
+        else if (this.form.attachment.name) {
+          // Assuming backend serves files from /api/files/{filename}
+          previewUrl = `/api/files/${this.form.attachment.name}`
+        }
+        
+        if (previewUrl) {
+          window.open(previewUrl, '_blank')
+        } else {
+          showErrorNotification('File URL not found', 'Preview Failed')
+        }
+      } catch (error) {
+        console.error('Preview error:', error)
+        showErrorNotification('Failed to preview file', 'Preview Error')
       }
     },
     removeFile() {
@@ -208,51 +266,69 @@ export default {
       this.$refs.fileInput.value = ''
     },
     async handleSubmit() {
-      if (!this.form.resolverPicId) {
-        this.$swal({ icon: 'warning', title: 'Resolver PIC required', text: 'Please select a Resolver PIC' })
+      if (!this.form.resolverId) {
+        showWarningNotification('Please select a Resolver PIC', 'Resolver PIC Required')
         return
       }
 
       try {
         const payload = {
-          ...this.form,
-          resolverPic: this.form.resolverPicId
+          id: this.form.id,
+          createdBy: this.form.createdById,
+          createdById: this.form.createdById,
+          ticketNo: this.form.noTiket,
+          noTiket: this.form.noTiket,
+          description: this.form.description,
+          type: this.form.type,
+          resolverPic: this.form.resolverId,
+          resolverId: this.form.resolverId,
+          solution: this.form.solution,
+          application: this.form.application,
+          date: this.form.date,
+          attachment: this.form.attachment
         }
         
         await this.$store.dispatch('nonProjects/updateNonProject', payload)
-        this.$router.push({ 
-          name: 'nonproject-list', 
-          query: { 
-            flash: `Ticket \"${payload.ticketNo}\" updated successfully`,
-            type: 'success'
-          }
-        })
+        showSuccessNotification(`Ticket "${this.form.noTiket}" has been updated successfully`)
+        this.$router.push({ name: 'nonproject-list' })
       } catch (error) {
-        this.$swal({
-          icon: 'error',
-          title: 'Error!',
-          text: error?.response?.data?.message || 'Failed to update Non-Project'
-        })
+        const errorMsg = error?.response?.data?.message || 'Failed to update Non-Project'
+        showErrorNotification(errorMsg)
       }
     },
     loadNonProject() {
       const nonProjectId = parseInt(this.$route.params.id)
       const nonProject = this.getNonProjectById(nonProjectId)
+      
       if (nonProject) {
-        const createdById = this.employeeIdByName(nonProject.createdBy) || nonProject.createdById
-        const resolverPicId = this.employeeIdByName(nonProject.resolverPic) || nonProject.resolverPicId
+        // Handle both name (string) and ID (number) formats
+        let createdById = nonProject.createdBy
+        let resolverId = nonProject.resolverPic
+        
+        // If createdBy is a name string, convert to ID
+        if (typeof createdById === 'string') {
+          createdById = this.employeeIdByName(createdById)
+        }
+        
+        // If resolverPic is a name string, convert to ID
+        if (typeof resolverId === 'string') {
+          resolverId = this.employeeIdByName(resolverId)
+        }
         
         this.form = { 
-          ...nonProject,
-          createdById,
-          resolverPicId
+          id: nonProject.id,
+          createdById: createdById || null,
+          noTiket: nonProject.ticketNo || '',
+          description: nonProject.description || '',
+          type: nonProject.type || '',
+          resolverId: resolverId || null,
+          solution: nonProject.solution || '',
+          application: nonProject.application || '',
+          date: nonProject.date || '',
+          attachment: nonProject.attachment || null
         }
       } else {
-        this.$swal({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Non-Project not found'
-        })
+        showErrorNotification('Non-Project not found')
         this.$router.push({ name: 'nonproject-list' })
       }
     }

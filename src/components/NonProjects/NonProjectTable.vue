@@ -22,15 +22,15 @@
           </td>
         </tr>
         <tr v-else v-for="np in nonProjects" :key="np.id">
-          <td>{{ np.createdByName || '-' }}</td>
-          <td>{{ np.ticketNo }}</td>
-          <td>{{ np.description }}</td>
-          <td><span class="badge bg-secondary">{{ np.type }}</span></td>
-          <td>{{ np.resolverPicNames || '-' }}</td>
-          <td>{{ np.solution || '-' }}</td>
-          <td>{{ np.application }}</td>
-          <td>{{ formatDate(np.date) }}</td>
-          <td>
+          <td style="white-space: nowrap;">{{ np.createdByName || '-' }}</td>
+          <td style="white-space: nowrap;">{{ np.ticketNo }}</td>
+          <td style="min-width: 250px; white-space: normal;">{{ np.description }}</td>
+          <td style="white-space: nowrap;"><span class="badge bg-secondary">{{ np.type }}</span></td>
+          <td style="white-space: nowrap;">{{ np.resolverPicNames || '-' }}</td>
+          <td style="min-width: 200px; white-space: normal;">{{ np.solution || '-' }}</td>
+          <td style="white-space: nowrap;">{{ np.application }}</td>
+          <td style="white-space: nowrap;">{{ formatDate(np.date) }}</td>
+          <td style="white-space: nowrap;">
             <span class="badge bg-info">{{ np.attachmentsCount || (np.attachment ? 1 : 0) }} files</span>
           </td>
           <td>
@@ -90,6 +90,7 @@ export default {
   background-color: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .btn-link {
@@ -108,5 +109,10 @@ export default {
 .badge {
   font-weight: 500;
   padding: 0.35em 0.65em;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
 }
 </style>

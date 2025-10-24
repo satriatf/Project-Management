@@ -114,8 +114,13 @@ export default {
     }
   },
   methods: {
-    confirmDelete(np) {
-      showDeleteConfirmation(np.ticketNo, async () => {
+    async confirmDelete(np) {
+      const result = await showDeleteConfirmation(
+        `Are you sure you want to delete ticket "${np.ticketNo}"?`,
+        'Delete Non-Project'
+      )
+      
+      if (result.isConfirmed) {
         try {
           await this.$store.dispatch('nonProjects/deleteNonProject', np.id)
           showSuccessNotification(`Ticket "${np.ticketNo}" has been deleted successfully`)
@@ -125,7 +130,7 @@ export default {
           const msg = err?.response?.data?.message || err?.message || 'Failed to delete Non-Project'
           showErrorNotification(msg)
         }
-      })
+      }
     }
   },
   mounted() {

@@ -56,7 +56,7 @@
 
             <div class="col-md-12">
               <label class="form-label">PIC<span class="text-danger">*</span></label>
-              <div class="row g-2 mb-2">
+              <div class="row g-2 mb-3">
                 <div class="col-10">
                   <select class="form-select form-select-sm" v-model="selectedPICCandidate">
                     <option value="">Select</option>
@@ -69,11 +69,25 @@
                   <button type="button" class="btn btn-warning btn-sm w-100" @click="addPIC">Add</button>
                 </div>
               </div>
-              <div v-if="form.picIds.length > 0">
-                <span v-for="id in form.picIds" :key="id" class="badge bg-warning text-dark me-2 mb-2 p-2">
-                  {{ employeeNameById(id) }}
-                  <button type="button" class="btn-close btn-close-white ms-2" @click="removePIC(id)" aria-label="Remove"></button>
-                </span>
+              
+              <!-- PIC List dengan nomor urut -->
+              <div v-if="form.picIds.length > 0" class="pic-list-container p-3 border rounded bg-light">
+                <div class="pic-list">
+                  <div v-for="(id, index) in form.picIds" :key="id" class="pic-item d-flex justify-content-between align-items-center mb-2">
+                    <span class="pic-name">
+                      <strong>{{ index + 1 }}.</strong> {{ employeeNameById(id) }}
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click="removePIC(id)" title="Remove">
+                      <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-muted small">
+                <em>No PICs added yet. Please add at least one PIC.</em>
               </div>
             </div>
 
@@ -136,6 +150,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
 import Swal from 'sweetalert2'
 
 export default {
@@ -205,55 +220,92 @@ export default {
     async handleSubmit() {
       // Validation
       if (!this.form.technicalLeadId) {
-        this.$swal({ icon: 'warning', title: 'Technical Lead required', text: 'Please select a Technical Lead' })
+        showWarningNotification('Please select a Technical Lead', 'Technical Lead Required')
         return
       }
       if (this.form.picIds.length === 0) {
-        this.$swal({ icon: 'warning', title: 'PIC required', text: 'Please select at least one PIC' })
+        showWarningNotification('Please select at least one PIC', 'PIC Required')
         return
       }
 
       try {
-        // Convert IDs to names for backend compatibility
+        // Backend expects technical lead as NAME (string) and PICs as JSON array of NAMES
+        const technicalLeadName = this.employeeNameById(this.form.technicalLeadId)
+        const picNames = this.form.picIds.map(id => this.employeeNameById(id))
+        
+        // Prepare payload with proper field names matching backend
         const payload = {
-          ...this.form,
-          technicalLead: this.employeeNameById(this.form.technicalLeadId),
-          pic: this.form.picIds.map(id => this.employeeNameById(id))
+          sk_project: this.form.id,
+          project_ticket_no: this.form.ticketNo,
+          project_name: this.form.name,
+          project_status: this.form.status,
+          technical_lead: technicalLeadName, // Send name, not ID
+          pics_json: JSON.stringify(picNames), // Send names as JSON array
+          start_date: this.form.startDate,
+          end_date: this.form.endDate,
+          total_day: this.form.totalDays,
+          percent_done: this.form.percentDone
         }
         
         await this.$store.dispatch('projects/updateProject', payload)
-        this.$router.push({ 
-          name: 'project-list', 
-          query: { 
-            flash: `Project \"${payload.name}\" updated successfully`,
-            type: 'success'
-          }
-        })
+        showSuccessNotification(`Project "${this.form.name}" has been updated successfully`)
+        this.$router.push({ name: 'project-list' })
       } catch (error) {
-        this.$swal({
-          icon: 'error',
-          title: 'Error!',
-          text: error?.response?.data?.message || 'Failed to update project'
-        })
+        const errorMsg = error?.response?.data?.message || 'Failed to update project'
+        showErrorNotification(errorMsg)
       }
     },
     loadProject() {
-      const projectId = parseInt(this.$route.params.id)
+      // Project ID is UUID, not integer
+      const projectId = this.$route.params.id
       const project = this.getProjectById(projectId)
+      
       if (project) {
         // Convert names to IDs for the new UI pattern
-        const technicalLeadId = this.employeeIdByName(project.technicalLead)
-        const picIds = Array.isArray(project.pic) 
-          ? project.pic.map(name => this.employeeIdByName(name)).filter(id => id !== null)
-          : []
+        let technicalLeadId = project.technical_lead
+        
+        // If technical_lead is a name string, convert to ID
+        if (typeof technicalLeadId === 'string') {
+          technicalLeadId = this.employeeIdByName(technicalLeadId)
+        }
+        
+        // Handle PICs - can be JSON string or array
+        let picIds = []
+        if (project.pics_json) {
+          try {
+            const picsArray = typeof project.pics_json === 'string' 
+              ? JSON.parse(project.pics_json) 
+              : project.pics_json
+            
+            picIds = Array.isArray(picsArray)
+              ? picsArray.map(nameOrId => {
+                  // If it's a name (string), convert to ID
+                  if (typeof nameOrId === 'string') {
+                    return this.employeeIdByName(nameOrId)
+                  }
+                  // If it's already an ID (number), use it
+                  return nameOrId
+                }).filter(id => id !== null)
+              : []
+          } catch (e) {
+            console.error('Error parsing pics_json:', e)
+          }
+        }
         
         this.form = { 
-          ...project,
-          technicalLeadId,
-          picIds
+          id: project.sk_project,
+          ticketNo: project.project_ticket_no || '',
+          name: project.project_name || '',
+          status: project.project_status || '',
+          technicalLeadId: technicalLeadId || null,
+          picIds: picIds,
+          startDate: project.start_date || '',
+          endDate: project.end_date || '',
+          totalDays: project.total_day || 0,
+          percentDone: project.percent_done || 0
         }
       } else {
-        this.$swal({
+        Swal.fire({
           icon: 'error',
           title: 'Error!',
           text: 'Project not found'
@@ -280,5 +332,52 @@ export default {
 
 .text-danger {
   color: #dc3545 !important;
+}
+
+/* PIC List Styling */
+.pic-list-container {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.pic-list {
+  width: 100%;
+}
+
+.pic-item {
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.pic-item:hover {
+  background-color: #f8f9fa;
+  border-color: #ffc107;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.pic-name {
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.pic-name strong {
+  color: #ffc107;
+  margin-right: 8px;
+  min-width: 25px;
+  display: inline-block;
+}
+
+.btn-outline-danger {
+  padding: 2px 8px;
+  font-size: 0.875rem;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
 }
 </style>

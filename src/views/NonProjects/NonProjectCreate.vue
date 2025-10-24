@@ -29,7 +29,7 @@
               <input 
                 type="text" 
                 class="form-control" 
-                v-model="form.ticketNo"
+                v-model="form.noTiket"
                 placeholder="Enter ticket number"
                 required>
             </div>
@@ -56,7 +56,7 @@
 
             <div class="col-md-6">
               <label class="form-label">Resolver PIC<span class="text-danger">*</span></label>
-              <select class="form-select" v-model.number="form.resolverPicId" required>
+              <select class="form-select" v-model.number="form.resolverId" required>
                 <option :value="null">Select</option>
                 <option v-for="emp in shAndStaff" :key="emp.sk_user" :value="emp.sk_user">
                   {{ emp.employee_name }}
@@ -136,7 +136,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import userService from '@/common/user.service.js'
-import { showInfoNotification } from '@/common/notificationService'
+import { showInfoNotification, showSuccessNotification, showErrorNotification } from '@/common/notificationService'
 
 export default {
   name: 'NonProjectCreate',
@@ -144,8 +144,8 @@ export default {
     return {
       form: {
         createdById: null,
-        resolverPicId: null,
-        ticketNo: '',
+        resolverId: null,
+        noTiket: '',
         type: "",
         application: "",
         description: "",
@@ -193,15 +193,15 @@ export default {
       this.$refs.fileInput.value = ''
     },
     async handleSubmit() {
-      if (!this.form.resolverPicId) {
-        this.$swal({ icon:'warning', title:'Resolver PIC required', text:'Please select a Resolver PIC' })
+      if (!this.form.resolverId) {
+        showWarningNotification('Please select a Resolver PIC', 'Resolver PIC Required')
         return
       }
       
       const payload = {
         createdById: this.form.createdById || userService.getId(),
-        resolverId: this.form.resolverPicId,  // Send ID directly as number
-        noTiket: this.form.ticketNo,
+        resolverId: this.form.resolverId,  // Send ID directly as number
+        noTiket: this.form.noTiket,
         deskripsi: this.form.description,
         type: this.form.type,
         solusi: this.form.solution || '',
@@ -231,19 +231,11 @@ export default {
           this.$refs.fileInput.value = ''
         }
         
-        this.$router.push({ 
-          name: 'nonproject-list',
-          query: {
-            flash: `Ticket \"${payload.noTiket}\" created successfully`,
-            type: 'success'
-          }
-        })
+          showSuccessNotification(`Ticket "${payload.noTiket}" has been created successfully`)
+          this.$router.push({ name: 'nonproject-list' })
       } catch (err) {
-        this.$swal({
-          icon: 'error',
-          title: 'Error!',
-          text: err?.response?.data?.message || err?.message || 'Failed to create Non-Project'
-        })
+          const errorMsg = err?.response?.data?.message || err?.message || 'Failed to create Non-Project'
+          showErrorNotification(errorMsg)
       }
     },
     handleDraft() {

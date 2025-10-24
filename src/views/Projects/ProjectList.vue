@@ -53,6 +53,7 @@
 import { mapGetters } from 'vuex'
 import ProjectTable from '@/components/Projects/ProjectTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
+import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
 
 export default {
@@ -89,11 +90,16 @@ export default {
     }
   },
   methods: {
-    confirmDelete(project) {
-      showDeleteConfirmation(project.project_name, () => {
+    async confirmDelete(project) {
+      const result = await showDeleteConfirmation(
+        `Are you sure you want to delete project "${project.project_name}"?`,
+        'Delete Project'
+      )
+      
+      if (result.isConfirmed) {
         this.$store.dispatch('projects/deleteProject', project.sk_project)
         showSuccessNotification(`Project "${project.project_name}" has been deleted successfully`)
-      })
+      }
     }
   },
   mounted() {

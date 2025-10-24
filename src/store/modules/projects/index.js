@@ -7,7 +7,10 @@ const state = {
 
 const getters = {
   allProjects: (state) => state.projects,
-  projectById: (state) => (id) => state.projects.find(proj => proj.sk_project === id)
+  projectById: (state) => (id) => {
+    // Handle both UUID string and direct match
+    return state.projects.find(proj => proj.sk_project === id || String(proj.sk_project) === String(id))
+  }
 }
 
 const mutations = {

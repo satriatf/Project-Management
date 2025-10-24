@@ -1,4 +1,4 @@
-package main.java.com.web.boaapps.service;
+package com.web.boaapps.service;
 
 import com.web.boaapps.dto.EmployeeDTO;
 import com.web.boaapps.entity.User;

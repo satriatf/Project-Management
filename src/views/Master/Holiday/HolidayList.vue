@@ -84,6 +84,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import TablePagination from '@/components/partials/TablePagination.vue'
+import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
 
 export default {
@@ -121,11 +122,16 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' }
       return new Date(date).toLocaleDateString('en-US', options)
     },
-    confirmDelete(holiday) {
-      showDeleteConfirmation(holiday.description, () => {
+    async confirmDelete(holiday) {
+      const result = await showDeleteConfirmation(
+        `Are you sure you want to delete holiday "${holiday.description}"?`,
+        'Delete Holiday'
+      )
+      
+      if (result.isConfirmed) {
         this.$store.dispatch('master/softDeleteHoliday', holiday.id)
         showSuccessNotification(`Holiday "${holiday.description}" has been deleted successfully`)
-      })
+      }
     }
   },
   mounted() {

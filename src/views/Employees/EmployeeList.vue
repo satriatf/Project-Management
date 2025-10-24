@@ -53,6 +53,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import EmployeeTable from '@/components/Employees/EmployeeTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
+import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
 
 export default {
@@ -91,7 +92,12 @@ export default {
   methods: {
     ...mapActions('employees', ['fetchEmployees', 'deleteEmployee']),
     async confirmDelete(employee) {
-      showDeleteConfirmation(employee.employee_name, async () => {
+      const result = await showDeleteConfirmation(
+        `Are you sure you want to delete employee "${employee.employee_name}"?`,
+        'Delete Employee'
+      )
+      
+      if (result.isConfirmed) {
         try {
           await this.deleteEmployee(employee.sk_user)
           showSuccessNotification(`Employee "${employee.employee_name}" has been deleted permanently`)
@@ -105,7 +111,7 @@ export default {
             text: 'Failed to delete employee. Please try again.'
           })
         }
-      })
+      }
     }
   },
   mounted() {
