@@ -277,4 +277,14 @@ export default {
 .tag-close { 
   border: none; background: transparent; color: #dc3545; font-size: 1rem; line-height: 1; cursor: pointer; 
 }
+
+.breadcrumb-item a {
+  color: #111;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: #111;
+  text-decoration: underline;
+}
 </style>

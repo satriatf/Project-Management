@@ -176,4 +176,14 @@ export default {
 .text-danger {
   color: #dc3545 !important;
 }
+
+.breadcrumb-item a {
+  color: #111;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: #111;
+  text-decoration: underline;
+}
 </style>

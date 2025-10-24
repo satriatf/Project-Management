@@ -173,4 +173,14 @@ export default {
 .btn-link {
   text-decoration: none;
 }
+
+.breadcrumb-item a {
+  color: #111;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: #111;
+  text-decoration: underline;
+}
 </style>

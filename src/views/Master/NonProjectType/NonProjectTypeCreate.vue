@@ -71,4 +71,14 @@ export default {
 .card {
   border: 1px solid #e9ecef;
 }
+
+.breadcrumb-item a {
+  color: #111;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: #111;
+  text-decoration: underline;
+}
 </style>

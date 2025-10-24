@@ -12,11 +12,14 @@
         <div class="col-12">
           <div class="welcome-card p-4 rounded shadow-sm bg-white d-flex align-items-center">
             <div class="avatar-circle me-3">
-              <span class="avatar-text">{{ userInitialsFull }}</span>
+              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="16" fill="#e5e7eb"/>
+                <path d="M16 18c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5zm0-2a4 4 0 100-8 4 4 0 000 8z" fill="#6b7280"/>
+              </svg>
             </div>
             <div>
               <div class="fw-bold" style="color:#111;">Welcome to</div>
-              <small class="text-muted">{{ userName }}</small>
+              <small style="color:#111; font-weight:500;">{{ userName }}</small>
             </div>
             <div class="ms-auto">
               <button @click="signOut" class="btn btn-outline-secondary">

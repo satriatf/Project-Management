@@ -380,4 +380,14 @@ export default {
   background-color: #dc3545;
   border-color: #dc3545;
 }
+
+.breadcrumb-item a {
+  color: #111;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: #111;
+  text-decoration: underline;
+}
 </style>

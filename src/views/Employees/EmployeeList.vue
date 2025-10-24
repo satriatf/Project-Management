@@ -156,12 +156,12 @@ export default {
 }
 
 .breadcrumb-item a {
-  color: #6c757d;
+  color: #111;
   text-decoration: none;
 }
 
 .breadcrumb-item a:hover {
-  color: #495057;
+  color: #111;
   text-decoration: underline;
 }
 

@@ -106,15 +106,16 @@
 
             </ul>
           </div>
-          <a class="logout">
-            <span class="text-black px-3" style="font-size: 12px;">
-              {{ name }} ({{ nik }})
-            </span>
-            <a @click="logout" style="cursor: pointer;">
-              <i class="bi bi-box-arrow-right"></i>
-            </a>
-
-          </a>
+            <div class="navbar-profile d-flex align-items-center">
+              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="16" fill="#e5e7eb"/>
+                <path d="M16 18c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5zm0-2a4 4 0 100-8 4 4 0 000 8z" fill="#6b7280"/>
+              </svg>
+              <span class="fw-bold" style="color:#111; font-size: 13px;">{{ name }} <span style="color:#111; font-weight:400;">({{ nik }})</span></span>
+              <a @click="logout" style="margin-left:12px; color:#111;">
+                <i class="bi bi-box-arrow-right"></i>
+              </a>
+            </div>
         </li>
       </ul>
     </div>
