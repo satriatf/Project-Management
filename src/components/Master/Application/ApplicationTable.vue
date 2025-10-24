@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import '@/assets/css/components/tables.css'
+
 export default {
   name: 'ApplicationTable',
   props: {
@@ -68,26 +70,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.table th {
-  font-weight: 600;
-  color: #495057;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-  white-space: nowrap;
-}
-
-.btn-link {
-  text-decoration: none;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.table-responsive {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-</style>

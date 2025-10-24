@@ -70,6 +70,8 @@
 </template>
 
 <script>
+import '@/assets/css/components/timeline.css'
+
 export default {
   name: 'TimelinePopup',
   props: {
@@ -92,17 +94,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.gantt-detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; display:flex; align-items:center; justify-content:center; }
-.gantt-detail-card { background:#fff; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.2); width:min(660px,92vw); max-height:80vh; overflow:auto; padding:24px; color:#111827; font-size:14px; line-height:1.5; }
-.gantt-detail-card table { margin-top:12px; }
-.gantt-detail-card table tr { border-bottom:1px solid #f3f4f6; }
-.gantt-detail-card table tr:last-child { border-bottom:none; }
-.gantt-detail-card table td { padding:10px 8px; }
-.gantt-detail-card table td:first-child { font-weight:500; }
-.gantt-detail-actions { margin-top:20px; display:flex; gap:10px; justify-content:flex-end; padding-top:16px; border-top:1px solid #e5e7eb; }
-.gantt-btn { padding:8px 12px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer; font-size:14px; }
-.gantt-btn-gray { background:#e5e7eb; color:#111827; }
-.gantt-btn-gray:hover { background:#d1d5db; }
-</style>

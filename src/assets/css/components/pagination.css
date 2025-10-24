@@ -1,0 +1,21 @@
+/* Pagination Component Styles */
+
+.pagination .page-link {
+  color: #212529;
+}
+
+.pagination .page-link:focus {
+  box-shadow: none;
+}
+
+.pagination .page-item.disabled .page-link {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.pagination .page-link:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}

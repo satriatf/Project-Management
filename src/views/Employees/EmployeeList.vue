@@ -55,6 +55,7 @@ import EmployeeTable from '@/components/Employees/EmployeeTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
 import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
+import '@/assets/css/employees.css'
 
 export default {
   name: 'EmployeeList',
@@ -137,45 +138,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.card {
-  border: 1px solid #e9ecef;
-}
-
-.btn-warning {
-  background-color: #ffc107;
-  border-color: #ffc107;
-  color: #000;
-  font-weight: 500;
-}
-
-.btn-warning:hover {
-  background-color: #e0a800;
-  border-color: #d39e00;
-}
-
-.breadcrumb-item a {
-  color: #111;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: #111;
-  text-decoration: underline;
-}
-
-.input-group-text {
-  background-color: #fff;
-  border-right: 0;
-}
-
-.input-group .form-control {
-  border-left: 0;
-}
-
-.input-group .form-control:focus {
-  border-color: #ced4da;
-  box-shadow: none;
-}
-</style>

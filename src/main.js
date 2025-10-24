@@ -6,8 +6,6 @@ import store from './store'
 import VueSweetalert2 from 'vue-sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 import 'vue-multiselect/dist/vue-multiselect.css'
-import Swal from 'sweetalert2'
-import $ from 'jquery'
 
 import Vue3EasyDataTable from 'vue3-easy-data-table';
 import 'vue3-easy-data-table/dist/style.css';
@@ -23,14 +21,12 @@ import ToastPlugin from 'vue-toast-notification';
 // Import one of the available themes
 
 import 'vue-toast-notification/dist/theme-bootstrap.css';
-import UserService from '@/common/user.service.js'
 import { CALL_SERVICE_ASYNC } from '@/store/actions.type.js'
 import alertService from '@/common/alertService.js'
 import { SessionService } from '@/common/cookieSession.js'
 import Cookies from 'js-cookie'
 import  globalFormat  from '@/common/globalFormat.js'
 import userService from '@/common/user.service.js'
-window.$ = window.jQuery = $
 // Buat ref untuk loading instance
 
 const loadingRef = ref(null)
@@ -125,7 +121,7 @@ const doLogout = () => {
     .dispatch(CALL_SERVICE_ASYNC, {
       token: userService.getToken('token'),
       url: `${import.meta.env.VITE_BASE_URL_LOGIN}${import.meta.env.VITE_AUTH_LOGOUT}`,
-      body: { nik: UserService.getNik() }
+      body: { nik: userService.getNik() }
     })
     .then(() => {
       sessionStorage.clear()
@@ -198,6 +194,4 @@ setInterval(checkIdleTime, 1000)
 
 
 
-
-window.$ = $
 export default app

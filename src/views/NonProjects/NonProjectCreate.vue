@@ -137,6 +137,7 @@
 import { mapGetters } from 'vuex'
 import userService from '@/common/user.service.js'
 import { showInfoNotification, showSuccessNotification, showErrorNotification } from '@/common/notificationService'
+import '@/assets/css/non-projects.css'
 
 export default {
   name: 'NonProjectCreate',
@@ -257,34 +258,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.card {
-  border: 1px solid #e9ecef;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.resolver-tags { 
-  display: flex; flex-wrap: wrap; gap: .5rem; 
-}
-.tag { 
-  background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 16px; padding: .25rem .5rem; 
-  display: inline-flex; align-items: center; gap: .35rem; font-size: .9rem;
-}
-.tag-close { 
-  border: none; background: transparent; color: #dc3545; font-size: 1rem; line-height: 1; cursor: pointer; 
-}
-
-.breadcrumb-item a {
-  color: #111;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: #111;
-  text-decoration: underline;
-}
-</style>

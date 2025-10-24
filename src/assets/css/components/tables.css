@@ -1,0 +1,52 @@
+/* Component Table Styles - Shared across all table components */
+
+/* Table Header Styles */
+.table th {
+  font-weight: 600;
+  color: #495057;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Table Data Cells */
+.table td {
+  vertical-align: middle;
+}
+
+/* Link Button Styles */
+.btn-link {
+  text-decoration: none;
+}
+
+/* Gap Utilities */
+.gap-2 {
+  gap: 0.5rem;
+}
+
+/* Table Responsive */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Badge Styles */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  white-space: nowrap;
+}
+
+/* PIC List Styling (for Projects) */
+.pic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pic-item {
+  font-size: 0.9rem;
+  color: #495057;
+  padding: 0.125rem 0;
+}

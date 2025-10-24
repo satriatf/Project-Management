@@ -86,6 +86,7 @@ import { mapGetters } from 'vuex'
 import TablePagination from '@/components/partials/TablePagination.vue'
 import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
+import '@/assets/css/master.css'
 
 export default {
   name: 'NonProjectTypeList',
@@ -157,30 +158,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.card {
-  border: 1px solid #e9ecef;
-}
-
-.table th {
-  font-weight: 600;
-  color: #495057;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.btn-link {
-  text-decoration: none;
-}
-
-.breadcrumb-item a {
-  color: #111;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: #111;
-  text-decoration: underline;
-}
-</style>

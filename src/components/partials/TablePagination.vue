@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import '@/assets/css/components/pagination.css'
+
 export default {
   name: 'TablePagination',
   props: {
@@ -59,12 +61,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.pagination .page-link {
-  color: #212529;
-}
-.pagination .page-link:focus {
-  box-shadow: none;
-}
-</style>

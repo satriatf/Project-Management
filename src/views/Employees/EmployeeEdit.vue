@@ -122,6 +122,7 @@
 import { mapGetters } from 'vuex'
 import { showSuccessNotification, showErrorNotification } from '@/common/notificationService'
 import Swal from 'sweetalert2'
+import '@/assets/css/employees.css'
 
 export default {
   name: 'EmployeeEdit',
@@ -197,23 +198,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.card {
-  border: 1px solid #e9ecef;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.breadcrumb-item a {
-  color: #111;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: #111;
-  text-decoration: underline;
-}
-</style>

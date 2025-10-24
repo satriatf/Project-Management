@@ -1,0 +1,98 @@
+/* Projects Module Styles */
+
+/* Common Card Styles */
+.projects-card {
+  border: 1px solid #e9ecef;
+}
+
+/* Text Styles */
+.projects-text-danger {
+  color: #dc3545 !important;
+}
+
+/* Breadcrumb Styles */
+.projects-breadcrumb-link {
+  color: #111;
+  text-decoration: none;
+}
+
+.projects-breadcrumb-link:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+/* Button Styles */
+.projects-btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+  font-weight: 500;
+}
+
+.projects-btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
+/* Input Group Styles */
+.projects-input-group-text {
+  background-color: #fff;
+  border-right: 0;
+}
+
+.projects-input-group .form-control {
+  border-left: 0;
+}
+
+.projects-input-group .form-control:focus {
+  border-color: #ced4da;
+  box-shadow: none;
+}
+
+/* PIC List Styling */
+.pic-list-container {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.pic-list {
+  width: 100%;
+}
+
+.pic-item {
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.pic-item:hover {
+  background-color: #f8f9fa;
+  border-color: #ffc107;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.pic-name {
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.pic-name strong {
+  color: #ffc107;
+  margin-right: 8px;
+  min-width: 25px;
+  display: inline-block;
+}
+
+.btn-outline-danger {
+  padding: 2px 8px;
+  font-size: 0.875rem;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+

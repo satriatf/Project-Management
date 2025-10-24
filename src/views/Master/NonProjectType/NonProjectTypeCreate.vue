@@ -34,6 +34,8 @@
 </template>
 
 <script>
+import '@/assets/css/master.css'
+
 export default {
   name: 'NonProjectTypeCreate',
   data() {
@@ -66,19 +68,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.card {
-  border: 1px solid #e9ecef;
-}
-
-.breadcrumb-item a {
-  color: #111;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: #111;
-  text-decoration: underline;
-}
-</style>

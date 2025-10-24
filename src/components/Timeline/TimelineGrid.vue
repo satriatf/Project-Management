@@ -52,6 +52,8 @@
 </template>
 
 <script>
+import '@/assets/css/components/timeline.css'
+
 export default {
   name: 'TimelineGrid',
   props: {
@@ -102,50 +104,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.gantt-container { overflow-x: auto; background: #ffffff; }
-.gantt-container::-webkit-scrollbar { height: 8px; }
-.gantt-container::-webkit-scrollbar-track { background: #f1f5f9; }
-.gantt-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.gantt-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-.gantt-table { border-collapse: collapse; width: 100%; min-width: 1200px; font-size: 0.875rem; background: #ffffff; }
-.gantt-table th, .gantt-table td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: center; vertical-align: middle; }
-.gantt-table th { background: #f9fafb; font-weight: 600; color: #374151; position: sticky; top: 0; z-index: 100; }
-.gantt-table th.employee-header { background: #f3f4f6; position: sticky; left: 0; z-index: 200; min-width: 250px; text-align: left; }
-.gantt-table th.month-header { font-weight: 700; color: #1f2937; background: #f9fafb; }
-.gantt-table th.day-header { font-weight: 500; color: #6b7280; background: #f9fafb; font-size: 0.75rem; min-width: 20px; }
-
-.gantt-table td.employee { background:#fff; position: sticky; left:0; z-index:50; text-align:left; font-weight:500; color:#374151; min-width:250px; border-right:2px solid #d1d5db; }
-.gantt-table tbody tr:nth-child(even) td.employee { background: #f9fafb; }
-.gantt-table tbody tr:nth-child(odd) td:not(.employee) { background: #ffffff; }
-.gantt-table tbody tr:nth-child(even) td:not(.employee) { background: #f9fafb; }
-
-.gantt-table td { height: 28px; width: 20px; padding: 0; background: #ffffff; min-width: 20px; text-align: center; }
-
-/* New banded rendering inside each cell */
-.day-cell { position: relative; }
-.single-band { width: 100%; height: 100%; }
-.dual-band { width: 100%; height: 100%; display: flex; flex-direction: column; }
-.band { width: 100%; flex: 1 1 50%; }
-.dual-band .band + .band { border-top: 1px solid #e5e7eb; }
-.project { background: #3b82f6; }
-.mtc { background: #f59e0b; }
-/* Ensure cell color overrides base td background */
-.gantt-table td.project { background-color: #3b82f6 !important; color: #fff; }
-.gantt-table td.mtc { background-color: #f59e0b !important; color: #fff; }
-.band.empty { background: transparent; }
-.band-count { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: #fff; }
-.band-count.dark { color: #1f2937; }
-.band-count.center { top: 50%; transform: translate(-50%, -50%); }
-.band-count.top { top: 15%; }
-.band-count.bottom { bottom: 15%; }
-
-/* Removed hover-based color/layout changes to keep cells static on cursor hover */
-
-@media (max-width: 768px) {
-  .gantt-table { font-size: 0.75rem; }
-  .gantt-table th.employee-header, .gantt-table td.employee { min-width: 200px; }
-}
-</style>

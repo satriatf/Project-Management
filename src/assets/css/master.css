@@ -1,0 +1,50 @@
+/* Master Module Styles */
+
+/* Common Card Styles */
+.master-card {
+  border: 1px solid #e9ecef;
+}
+
+/* Text Styles */
+.master-text-danger {
+  color: #dc3545 !important;
+}
+
+/* Breadcrumb Styles */
+.master-breadcrumb-link {
+  color: #111;
+  text-decoration: none;
+}
+
+.master-breadcrumb-link:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+/* Button Styles */
+.master-btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+  font-weight: 500;
+}
+
+.master-btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
+/* Input Group Styles */
+.master-input-group-text {
+  background-color: #fff;
+  border-right: 0;
+}
+
+.master-input-group .form-control {
+  border-left: 0;
+}
+
+.master-input-group .form-control:focus {
+  border-color: #ced4da;
+  box-shadow: none;
+}

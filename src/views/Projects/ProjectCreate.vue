@@ -152,6 +152,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { showInfoNotification, showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
+import '@/assets/css/projects.css'
 
 export default {
   name: 'ProjectCreate',
@@ -277,70 +278,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.card {
-  border: 1px solid #e9ecef;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-/* PIC List Styling */
-.pic-list-container {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-}
-
-.pic-list {
-  width: 100%;
-}
-
-.pic-item {
-  padding: 8px 12px;
-  background-color: white;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.pic-item:hover {
-  background-color: #f8f9fa;
-  border-color: #ffc107;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.pic-name {
-  font-size: 0.95rem;
-  color: #495057;
-}
-
-.pic-name strong {
-  color: #ffc107;
-  margin-right: 8px;
-  min-width: 25px;
-  display: inline-block;
-}
-
-.btn-outline-danger {
-  padding: 2px 8px;
-  font-size: 0.875rem;
-  border-color: #dc3545;
-}
-
-.btn-outline-danger:hover {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-.breadcrumb-item a {
-  color: #111;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: #111;
-  text-decoration: underline;
-}
-</style>
