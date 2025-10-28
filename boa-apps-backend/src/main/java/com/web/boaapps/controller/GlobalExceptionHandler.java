@@ -15,7 +15,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String,Object>> handleValidation(MethodArgumentNotValidException ex){
         Map<String,Object> m = new LinkedHashMap<>();
         m.put("status","error");
-        m.put("message", ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+        var firstError = ex.getBindingResult().getFieldErrors().stream().findFirst();
+        if (firstError.isPresent()) {
+            String field = firstError.get().getField();
+            String msg = firstError.get().getDefaultMessage();
+            m.put("message", field + " " + msg);
+        } else {
+            m.put("message", ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+        }
         return ResponseEntity.badRequest().body(m);
     }
 

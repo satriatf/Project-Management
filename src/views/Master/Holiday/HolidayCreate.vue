@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import '@/assets/css/master.css'
+import '@/assets/css/views/master.css'
 
 export default {
   name: 'HolidayCreate',

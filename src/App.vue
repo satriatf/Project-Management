@@ -21,5 +21,5 @@ onMounted(() => {
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Material+Icons');
 @import '@/assets/css/style.css';
-@import '@/assets/css/unified-table.css';
+@import '@/assets/css/components/unified-table.css';
 </style>

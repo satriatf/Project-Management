@@ -121,7 +121,7 @@
 
 <script>
 import { showInfoNotification, showSuccessNotification, showErrorNotification } from '@/common/notificationService'
-import '@/assets/css/employees.css'
+import '@/assets/css/views/employees.css'
 
 export default {
   name: 'EmployeeCreate',

@@ -45,7 +45,9 @@ const ApiService = {
   init(app) {
     app.use(VueAxios, axios)
     // Configure base URL to Spring Boot backend
-    const baseURL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080/api/'
+    const rawBase = import.meta.env.VITE_BASE_URL || 'http://localhost:8080/api/'
+    // Ensure trailing slash exactly once to avoid double or missing slashes
+    const baseURL = rawBase.endsWith('/') ? rawBase : `${rawBase}/`
     app.axios.defaults.baseURL = baseURL
     axios.defaults.baseURL = baseURL
     axios.defaults.timeout = 60000

@@ -224,21 +224,29 @@ export default {
     }
   },
   watch: {
-    showProject(val) {
-      // Minimal 1 checkbox must be selected
-      if (!val && !this.showNonProject) {
-        this.showProject = true
+    showProject(newVal, oldVal) {
+      // Prevent both checkboxes from being unchecked
+      if (!newVal && !this.showNonProject) {
+        // Force this checkbox back to checked
+        this.$nextTick(() => {
+          this.showProject = true
+        })
         return
       }
-      this.hideTooltip(); this.closePopup()
+      this.hideTooltip()
+      this.closePopup()
     },
-    showNonProject(val) {
-      // Minimal 1 checkbox must be selected
-      if (!val && !this.showProject) {
-        this.showNonProject = true
+    showNonProject(newVal, oldVal) {
+      // Prevent both checkboxes from being unchecked
+      if (!newVal && !this.showProject) {
+        // Force this checkbox back to checked
+        this.$nextTick(() => {
+          this.showNonProject = true
+        })
         return
       }
-      this.hideTooltip(); this.closePopup()
+      this.hideTooltip()
+      this.closePopup()
     }
   },
   methods: {

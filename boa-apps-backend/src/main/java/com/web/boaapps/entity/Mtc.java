@@ -66,7 +66,7 @@ public class Mtc {
     @Column(name="tanggal", nullable=false)
     private LocalDate tanggal;
 
-    @Column(name="attachments")
+    @Column(name="attachments", columnDefinition="text")
     private String attachmentsJson;
 
     @Column(name="attachments_count", nullable=false)

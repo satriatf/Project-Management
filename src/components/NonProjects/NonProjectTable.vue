@@ -30,8 +30,10 @@
           <td style="min-width: 200px; white-space: normal;">{{ np.solution || '-' }}</td>
           <td style="white-space: nowrap;">{{ np.application }}</td>
           <td style="white-space: nowrap;">{{ formatDate(np.date) }}</td>
-          <td style="white-space: nowrap;">
-            <span class="badge bg-info">{{ np.attachmentsCount || (np.attachment ? 1 : 0) }} files</span>
+          <td style="white-space: nowrap; text-align: center;">
+            <span class="badge bg-info">
+              {{ getAttachments(np).length }} file(s)
+            </span>
           </td>
           <td>
             <div class="d-flex gap-2">
@@ -77,6 +79,19 @@ export default {
       if (!date) return '-'
       const options = { year: 'numeric', month: 'short', day: 'numeric' }
       return new Date(date).toLocaleDateString('en-US', options)
+    },
+    getAttachments(np) {
+      try {
+        if (!np.attachment) return []
+        // np.attachment can be a JSON string or already parsed object/array
+        if (typeof np.attachment === 'string') {
+          const parsed = JSON.parse(np.attachment)
+          return Array.isArray(parsed) ? parsed : [parsed]
+        }
+        return Array.isArray(np.attachment) ? np.attachment : [np.attachment]
+      } catch (e) {
+        return []
+      }
     },
     handleDelete(np) {
       this.$emit('delete', np)

@@ -54,7 +54,7 @@ import { mapGetters } from 'vuex'
 import NonProjectTable from '@/components/NonProjects/NonProjectTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
 import { showSuccessNotification, showDeleteConfirmation, showErrorNotification } from '@/common/notificationService'
-import '@/assets/css/non-projects.css'
+import '@/assets/css/views/non-projects.css'
 
 export default {
   name: 'NonProjectList',
@@ -135,8 +135,10 @@ export default {
     }
   },
   mounted() {
-    // Load non-projects from backend
-    this.$store.dispatch('nonProjects/fetchNonProjects')
+    // Load employees first, then non-projects to ensure name mapping works
+    this.$store.dispatch('employees/fetchEmployees').then(() => {
+      this.$store.dispatch('nonProjects/fetchNonProjects')
+    })
     // Flash success after navigation
     const msg = this.$route.query?.flash
     if (msg) {

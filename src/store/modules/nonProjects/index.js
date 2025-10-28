@@ -88,8 +88,12 @@ const actions = {
       solusi: nonProject.solution || nonProject.solusi || '',
       application: nonProject.application,
       tanggal: nonProject.date || nonProject.tanggal,
-      attachmentsJson: nonProject.attachment ? JSON.stringify(nonProject.attachment) : null,
-      attachmentsCount: nonProject.attachment ? 1 : 0
+      attachmentsJson: nonProject.attachment && Array.isArray(nonProject.attachment) && nonProject.attachment.length > 0 
+        ? JSON.stringify(nonProject.attachment) 
+        : null,
+      attachmentsCount: nonProject.attachment && Array.isArray(nonProject.attachment) 
+        ? nonProject.attachment.length 
+        : 0
     }
     const { data } = await ApiService.put(`non-projects/${nonProject.id}`, payload)
     const n = data?.data || {}

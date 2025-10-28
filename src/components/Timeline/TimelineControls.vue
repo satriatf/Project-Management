@@ -8,7 +8,7 @@
           type="checkbox" 
           id="filter-project" 
           :checked="showProject"
-          @change="$emit('update:showProject', !$event.target.checked ? false : true)"
+          @change="$emit('update:showProject', $event.target.checked)"
           class="filter-checkbox">
         <label for="filter-project" class="filter-checkbox-label">Project</label>
       </div>
@@ -17,7 +17,7 @@
           type="checkbox" 
           id="filter-non-project" 
           :checked="showNonProject"
-          @change="$emit('update:showNonProject', !$event.target.checked ? false : true)"
+          @change="$emit('update:showNonProject', $event.target.checked)"
           class="filter-checkbox">
         <label for="filter-non-project" class="filter-checkbox-label">Non-Project</label>
       </div>

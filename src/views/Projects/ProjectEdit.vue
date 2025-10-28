@@ -152,7 +152,7 @@
 import { mapGetters } from 'vuex'
 import { showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
 import Swal from 'sweetalert2'
-import '@/assets/css/projects.css'
+import '@/assets/css/views/projects.css'
 
 export default {
   name: 'ProjectEdit',

@@ -55,7 +55,7 @@ import EmployeeTable from '@/components/Employees/EmployeeTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
 import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
-import '@/assets/css/employees.css'
+import '@/assets/css/views/employees.css'
 
 export default {
   name: 'EmployeeList',

@@ -61,6 +61,7 @@
 
 <script>
 import '@/assets/css/components/tables.css'
+import '@/assets/css/components/employees.css'
 
 export default {
   name: 'EmployeeTable',
@@ -87,44 +88,3 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Badge styling */
-.badge-level {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.badge-status {
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.badge-active {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.badge-inactive {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-}
-
-/* Action buttons */
-.btn-link {
-  transition: all 0.2s ease;
-}
-
-.btn-link:hover {
-  transform: scale(1.1);
-}
-</style>

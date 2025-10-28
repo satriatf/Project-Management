@@ -98,22 +98,26 @@
               <input 
                 type="file" 
                 class="form-control" 
-                @change="handleFileUpload"
+                multiple
+                @change="handleFilesChange"
                 ref="fileInput">
-              <small class="text-muted">Upload file for documentation</small>
-              
-              <div v-if="form.attachment" class="mt-2 p-3 border rounded bg-light">
-                <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">You can upload multiple files for documentation</small>
+
+              <div v-if="form.attachments.length" class="mt-2 p-3 border rounded bg-light">
+                <div 
+                  v-for="(att, idx) in form.attachments" 
+                  :key="idx" 
+                  class="d-flex justify-content-between align-items-center py-1 border-bottom">
                   <div>
                     <i class="fa fa-file me-2"></i>
-                    <strong>{{ form.attachment.name }}</strong>
-                    <small class="text-muted ms-2">({{ formatFileSize(form.attachment.size) }})</small>
+                    <strong>{{ att.name }}</strong>
+                    <small class="text-muted ms-2">({{ formatFileSize(att.size) }})</small>
                   </div>
                   <div>
-                    <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="previewFile">
+                    <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="previewFile(att)">
                       <i class="fa fa-eye"></i> Preview
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" @click="removeFile">
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click="removeAttachment(idx)">
                       <i class="fa fa-trash"></i> Remove
                     </button>
                   </div>
@@ -136,8 +140,9 @@
 <script>
 import { mapGetters } from 'vuex'
 import userService from '@/common/user.service.js'
-import { showInfoNotification, showSuccessNotification, showErrorNotification } from '@/common/notificationService'
-import '@/assets/css/non-projects.css'
+import { showInfoNotification, showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
+import axios from 'axios'
+import '@/assets/css/views/non-projects.css'
 
 export default {
   name: 'NonProjectCreate',
@@ -152,7 +157,7 @@ export default {
         description: "",
         solution: "",
         date: "",
-        attachment: null
+        attachments: []
       }
     }
   },
@@ -165,17 +170,42 @@ export default {
     shAndStaff() { return this.employees.filter(e => e.level==='SH' || e.level==='Staff') }
   },
   methods: {
-    handleFileUpload(event) {
-      const file = event.target.files[0]
-      if (file) {
-        this.form.attachment = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data: file,
-          url: URL.createObjectURL(file)
+    handleFilesChange(event) {
+      const files = Array.from(event.target.files || [])
+      const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+      const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      const ALLOWED_EXTS = ['.pdf', '.jpg', '.jpeg', '.png', '.docx']
+
+      const validated = []
+      for (const f of files) {
+        if (!f || f.size === 0) continue
+        
+        // Check size
+        if (f.size > MAX_SIZE) {
+          showWarningNotification(`File "${f.name}" exceeds 10MB limit`, 'File Too Large')
+          continue
         }
+        
+        // Check type
+        const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase()
+        if (!ALLOWED_TYPES.includes(f.type) && !ALLOWED_EXTS.includes(ext)) {
+          showWarningNotification(`File "${f.name}" is not allowed. Only PDF, JPG, PNG, DOCX are accepted.`, 'Invalid File Type')
+          continue
+        }
+        
+        validated.push({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          data: f,
+          url: URL.createObjectURL(f)
+        })
       }
+      
+      // merge with existing (avoid duplicates by name+size)
+      const existingKey = new Set(this.form.attachments.map(a => `${a.name}:${a.size}`))
+      const toAdd = validated.filter(a => !existingKey.has(`${a.name}:${a.size}`))
+      this.form.attachments = [...this.form.attachments, ...toAdd]
     },
     formatFileSize(bytes) {
       if (bytes === 0) return '0 Bytes'
@@ -184,49 +214,57 @@ export default {
       const i = Math.floor(Math.log(bytes) / Math.log(k))
       return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
     },
-    previewFile() {
-      if (this.form.attachment && this.form.attachment.url) {
-        window.open(this.form.attachment.url, '_blank')
+    previewFile(att) {
+      if (att && att.url) {
+        window.open(att.url, '_blank')
       }
     },
-    removeFile() {
-      this.form.attachment = null
-      this.$refs.fileInput.value = ''
+    removeAttachment(index) {
+      this.form.attachments.splice(index, 1)
+      if (this.$refs.fileInput && this.form.attachments.length === 0) {
+        this.$refs.fileInput.value = ''
+      }
     },
     async handleSubmit() {
+      // Minimal client-side validation to reduce 400 errors
+      if (!this.form.createdById && !userService.getId()) {
+        showWarningNotification('Created By is required (or login user missing).', 'Validation')
+        return
+      }
       if (!this.form.resolverId) {
         showWarningNotification('Please select a Resolver PIC', 'Resolver PIC Required')
         return
       }
-      
+      if (!this.form.noTiket || !this.form.description || !this.form.type || !this.form.application || !this.form.date) {
+        showWarningNotification('Please fill all required fields (Ticket, Description, Type, Application, Date).', 'Validation')
+        return
+      }
+
       try {
-        let attachmentData = null
+  let attachmentData = null
         
         // Upload file first if there's an attachment
-        if (this.form.attachment && this.form.attachment.data) {
+        const files = this.form.attachments || []
+        if (files.length > 0) {
           const formData = new FormData()
-          formData.append('file', this.form.attachment.data)
-          
+          files.forEach(f => formData.append('files', f.data))
+
           try {
-            const response = await fetch('http://localhost:8080/api/non-projects/upload', {
-              method: 'POST',
-              body: formData
+            // Use axios so Authorization header (JWT) is attached via interceptors
+            const uploadUrl = `${axios.defaults.baseURL}non-projects/uploads`
+            const { data } = await axios.post(uploadUrl, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
             })
-            
-            if (!response.ok) {
-              throw new Error('File upload failed')
-            }
-            
-            const result = await response.json()
-            attachmentData = result.data // File info from backend
+            attachmentData = data.data // Array of file info from backend
           } catch (uploadError) {
-            showErrorNotification('Failed to upload file: ' + uploadError.message)
+            const msg = uploadError?.response?.data?.message || uploadError.message || 'File upload failed'
+            showErrorNotification('Failed to upload file: ' + msg)
             return
           }
         }
         
         const payload = {
-          createdById: this.form.createdById || userService.getId(),
+          createdById: this.form.createdById || Number(userService.getId()),
           resolverId: this.form.resolverId,
           noTiket: this.form.noTiket,
           deskripsi: this.form.description,
@@ -234,9 +272,12 @@ export default {
           solusi: this.form.solution || '',
           application: this.form.application,
           tanggal: this.form.date,
-          attachmentsJson: attachmentData ? JSON.stringify(attachmentData) : null,
-          attachmentsCount: attachmentData ? 1 : 0
+          attachmentsJson: attachmentData && attachmentData.length ? JSON.stringify(attachmentData) : null,
+          attachmentsCount: attachmentData && attachmentData.length ? attachmentData.length : 0
         }
+        // Debug: inspect payload sent to backend
+        // eslint-disable-next-line no-console
+        console.log('Submitting Non-Project payload:', payload)
         
         await this.$store.dispatch('nonProjects/addNonProject', payload)
         localStorage.removeItem('nonProjectDraft')
@@ -251,7 +292,7 @@ export default {
           description: "",
           solution: "",
           date: "",
-          attachment: null
+          attachments: []
         }
         if (this.$refs.fileInput) {
           this.$refs.fileInput.value = ''

@@ -42,6 +42,8 @@ public class SecurityConfig {
             // Always allow preflight requests
             .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**","/swagger-ui.html","/v3/api-docs/**","/swagger-ui/**").permitAll()
+                        // Allow public access to file downloads/previews (GET only)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/*/files/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

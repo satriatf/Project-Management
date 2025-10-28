@@ -27,15 +27,16 @@ import java.util.UUID;
 @RequestMapping("/api/non-projects")
 public class MtcController {
     private final MtcService svc;
-    private static final String UPLOAD_DIR = "public/file/non-projects/";
+    // Use absolute path to avoid ambiguity with working directory
+    private static final java.nio.file.Path UPLOAD_DIR_PATH = Paths.get("public","file","non-projects").toAbsolutePath();
     
     public MtcController(MtcService svc){ 
         this.svc = svc;
         // Create upload directory if it doesn't exist
         try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
+            Files.createDirectories(UPLOAD_DIR_PATH);
         } catch (IOException e) {
-            throw new RuntimeException("Could not create upload directory!", e);
+            throw new RuntimeException("Could not create upload directory at: " + UPLOAD_DIR_PATH, e);
         }
     }
 
@@ -67,7 +68,7 @@ public class MtcController {
 
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<Map<String, String>>> uploadFile(
-            @RequestParam("file") MultipartFile file) {
+        @RequestParam("file") MultipartFile file) {
         
         if (file.isEmpty()) {
             throw new RuntimeException("Please select a file to upload");
@@ -83,7 +84,7 @@ public class MtcController {
             String uniqueFilename = UUID.randomUUID().toString() + extension;
 
             // Save file
-            Path targetLocation = Paths.get(UPLOAD_DIR + uniqueFilename);
+            Path targetLocation = UPLOAD_DIR_PATH.resolve(uniqueFilename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Return file info
@@ -96,14 +97,14 @@ public class MtcController {
 
             return ResponseEntity.ok(ApiResponse.ok(fileInfo));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file: " + e.getMessage());
+            throw new RuntimeException("Failed to store file at: " + UPLOAD_DIR_PATH + ", cause: " + e.getMessage(), e);
         }
     }
 
     @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(filename).normalize();
+            Path filePath = UPLOAD_DIR_PATH.resolve(filename).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists()) {
@@ -116,13 +117,54 @@ public class MtcController {
                 contentType = "application/octet-stream";
             }
 
+            // Return file for inline viewing (preview) not forced download
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, 
-                            "attachment; filename=\"" + resource.getFilename() + "\"")
+                            "inline; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
         } catch (Exception e) {
             throw new RuntimeException("Error downloading file: " + e.getMessage());
+        }
+    }
+
+    // Upload multiple files in one request
+    @PostMapping("/uploads")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> uploadFiles(
+            @RequestParam("files") MultipartFile[] files) {
+        if (files == null || files.length == 0) {
+            throw new RuntimeException("Please select at least one file to upload");
+        }
+
+        try {
+            List<Map<String,String>> uploaded = new java.util.ArrayList<>();
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) continue; // skip empty entries
+
+                String originalFilename = file.getOriginalFilename();
+                String extension = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String uniqueFilename = UUID.randomUUID().toString() + extension;
+
+                Path targetLocation = UPLOAD_DIR_PATH.resolve(uniqueFilename);
+                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+                Map<String, String> fileInfo = new HashMap<>();
+                fileInfo.put("name", uniqueFilename);
+                fileInfo.put("originalName", originalFilename);
+                fileInfo.put("size", String.valueOf(file.getSize()));
+                fileInfo.put("type", file.getContentType());
+                fileInfo.put("url", "/api/non-projects/files/" + uniqueFilename);
+                uploaded.add(fileInfo);
+            }
+            if (uploaded.isEmpty()) {
+                throw new RuntimeException("All provided files were empty");
+            }
+            return ResponseEntity.ok(ApiResponse.ok(uploaded));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store files at: " + UPLOAD_DIR_PATH + ", cause: " + e.getMessage(), e);
         }
     }
 }

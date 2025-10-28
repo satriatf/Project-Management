@@ -109,6 +109,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import userService from '@/common/user.service'
+import '@/assets/css/views/dashboard.css'
 
 export default {
   name: 'DashboardView',
@@ -166,41 +167,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.welcome-card {
-  border: 1px solid #e9ecef;
-}
-
-.avatar-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-text {
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.dashboard-card {
-  border: 1px solid #e9ecef;
-  transition: transform 0.2s;
-  cursor: pointer;
-}
-
-.dashboard-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-.dashboard-card h2 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #212529;
-}
-</style>

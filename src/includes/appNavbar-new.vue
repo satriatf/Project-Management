@@ -48,6 +48,8 @@
 <script>
 import JwtService from '@/common/jwt.service'
 import userService from '@/common/user.service'
+import '@/assets/css/includes/includes.css'
+
 export default {
   name: 'AppNavbar',
   computed: {
@@ -99,76 +101,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.navbar {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid #f0f0f0;
-  transition: all 0.3s ease;
-}
-
-.logo-login h4 {
-  font-family: 'Inter', sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.avatar-circle-svg {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.avatar-circle-svg:hover {
-  transform: scale(1.05);
-}
-
-.avatar-circle-svg-large {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.user-name-text {
-  color: #000000 !important;
-  font-weight: 600 !important;
-  font-size: 14px;
-}
-
-.dropdown-menu {
-  min-width: 280px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  margin-top: 8px;
-}
-
-.dropdown-item {
-  padding: 10px 16px;
-  transition: all 0.2s ease;
-  border-radius: 8px;
-  margin: 4px 8px;
-}
-
-.dropdown-item:hover {
-  background-color: #f9fafb;
-  color: #000;
-}
-
-/* Hide dropdown chevron */
-.dropdown-toggle::after {
-  display: none !important;
-}
-</style>
- 

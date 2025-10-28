@@ -94,29 +94,35 @@
             </div>
 
             <div class="col-md-12">
-              <label class="form-label">Attachment</label>
+              <label class="form-label">Attachments</label>
               <input 
                 type="file" 
                 class="form-control" 
-                @change="handleFileUpload"
+                multiple
+                @change="handleFilesChange"
                 ref="fileInput">
-              <small class="text-muted">Upload file for documentation</small>
+              <small class="text-muted">You can upload multiple files (PDF, JPG, PNG, DOCX, max 10MB each)</small>
               
-              <div v-if="form.attachment" class="mt-2 p-3 border rounded bg-light">
-                <div class="d-flex justify-content-between align-items-center">
+              <div v-if="form.attachments.length" class="mt-2 p-3 border rounded bg-light">
+                <div 
+                  v-for="(att, idx) in form.attachments" 
+                  :key="idx" 
+                  class="d-flex justify-content-between align-items-center py-2 border-bottom">
                   <div>
                     <i class="fa fa-file me-2"></i>
-                    <strong>{{ form.attachment.name }}</strong>
-                    <small class="text-muted ms-2">({{ formatFileSize(form.attachment.size) }})</small>
+                    <strong>{{ att.originalName || att.name }}</strong>
+                    <small class="text-muted ms-2">({{ formatFileSize(att.size) }})</small>
+                    <span v-if="!att.data" class="badge bg-success ms-2">Saved</span>
+                    <span v-else class="badge bg-warning ms-2">New</span>
                   </div>
                   <div>
-                    <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="downloadFile">
-                      <i class="fa fa-download"></i> Download
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="previewFile">
+                    <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="previewFile(att)">
                       <i class="fa fa-eye"></i> Preview
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" @click="removeFile">
+                    <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="downloadFile(att)">
+                      <i class="fa fa-download"></i> Download
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click="removeAttachment(idx)">
                       <i class="fa fa-trash"></i> Remove
                     </button>
                   </div>
@@ -139,7 +145,8 @@
 import { mapGetters } from 'vuex'
 import { showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
 import Swal from 'sweetalert2'
-import '@/assets/css/non-projects.css'
+import axios from 'axios'
+import '@/assets/css/views/non-projects.css'
 
 export default {
   name: 'NonProjectEdit',
@@ -155,7 +162,7 @@ export default {
         solution: '',
         application: '',
         date: '',
-        attachment: null
+        attachments: []
       }
     }
   },
@@ -173,17 +180,40 @@ export default {
       const e = this.employees.find(x=>x.employee_name===name)
       return e ? e.sk_user : null
     },
-    handleFileUpload(event) {
-      const file = event.target.files[0]
-      if (file) {
-        this.form.attachment = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data: file,
-          url: URL.createObjectURL(file)
+    handleFilesChange(event) {
+      const files = Array.from(event.target.files || [])
+      const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+      const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      const ALLOWED_EXTS = ['.pdf', '.jpg', '.jpeg', '.png', '.docx']
+
+      const validated = []
+      for (const f of files) {
+        if (!f || f.size === 0) continue
+        
+        if (f.size > MAX_SIZE) {
+          showWarningNotification(`File "${f.name}" exceeds 10MB limit`, 'File Too Large')
+          continue
         }
+        
+        const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase()
+        if (!ALLOWED_TYPES.includes(f.type) && !ALLOWED_EXTS.includes(ext)) {
+          showWarningNotification(`File "${f.name}" is not allowed. Only PDF, JPG, PNG, DOCX are accepted.`, 'Invalid File Type')
+          continue
+        }
+        
+        validated.push({
+          name: f.name,
+          originalName: f.name,
+          size: f.size,
+          type: f.type,
+          data: f,
+          url: URL.createObjectURL(f)
+        })
       }
+      
+      const existingKey = new Set(this.form.attachments.map(a => `${a.originalName||a.name}:${a.size}`))
+      const toAdd = validated.filter(a => !existingKey.has(`${a.originalName||a.name}:${a.size}`))
+      this.form.attachments = [...this.form.attachments, ...toAdd]
     },
     formatFileSize(bytes) {
       if (bytes === 0) return '0 Bytes'
@@ -192,101 +222,75 @@ export default {
       const i = Math.floor(Math.log(bytes) / Math.log(k))
       return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
     },
-    downloadFile() {
-      if (!this.form.attachment) {
+    async downloadFile(att) {
+      if (!att) {
         showWarningNotification('No file to download', 'No Attachment')
         return
       }
       
       try {
-        let downloadUrl = null
-        
-        // If attachment has data (newly uploaded file)
-        if (this.form.attachment.data) {
-          downloadUrl = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
-          
-          // Download using blob URL
+        if (att.data) {
+          const url = att.url || URL.createObjectURL(att.data)
           const link = document.createElement('a')
-          link.href = downloadUrl
-          link.download = this.form.attachment.name || 'download'
+          link.href = url
+          link.download = att.originalName || att.name || 'download'
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)
-          
           showSuccessNotification('File download started')
-        } 
-        // If attachment from backend, use fetch to download
-        else if (this.form.attachment.url) {
-          fetch(this.form.attachment.url)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('File not found on server')
-              }
-              return response.blob()
-            })
-            .then(blob => {
-              const url = window.URL.createObjectURL(blob)
-              const link = document.createElement('a')
-              link.href = url
-              link.download = this.form.attachment.name || 'download'
-              document.body.appendChild(link)
-              link.click()
-              document.body.removeChild(link)
-              window.URL.revokeObjectURL(url)
-              
-              showSuccessNotification('File downloaded successfully')
-            })
-            .catch(error => {
-              console.error('Download error:', error)
-              showErrorNotification('File not found or cannot be downloaded', 'Download Failed')
-            })
-        } else {
-          showErrorNotification('File URL not found', 'Download Failed')
+          return
         }
+
+        const fileUrl = att.url
+        if (!fileUrl) {
+          showErrorNotification('File URL not found', 'Download Failed')
+          return
+        }
+        const { data } = await axios.get(fileUrl, { responseType: 'blob' })
+        const blobUrl = window.URL.createObjectURL(new Blob([data]))
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.download = att.originalName || att.name || 'download'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+        showSuccessNotification('File downloaded successfully')
       } catch (error) {
         console.error('Download error:', error)
-        showErrorNotification('Failed to download file', 'Download Error')
+        const msg = error?.response?.status === 403 ? 'Unauthorized. Please re-login.' : 'File not found or cannot be downloaded'
+        showErrorNotification(msg, 'Download Failed')
       }
     },
-    previewFile() {
-      if (!this.form.attachment) {
+    async previewFile(att) {
+      if (!att) {
         showWarningNotification('No file to preview', 'No Attachment')
         return
       }
       
       try {
-        let previewUrl = null
-        
-        // If attachment has data (newly uploaded file)
-        if (this.form.attachment.data) {
-          previewUrl = this.form.attachment.url || URL.createObjectURL(this.form.attachment.data)
+        if (att.data) {
+          const previewUrl = att.url || URL.createObjectURL(att.data)
           window.open(previewUrl, '_blank')
+          return
         }
-        // If attachment from backend
-        else if (this.form.attachment.url) {
-          // Check if file exists first
-          fetch(this.form.attachment.url, { method: 'HEAD' })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('File not found on server')
-              }
-              window.open(this.form.attachment.url, '_blank')
-            })
-            .catch(error => {
-              console.error('Preview error:', error)
-              showErrorNotification('File not found on server', 'Preview Failed')
-            })
-        } else {
+
+        const fileUrl = att.url
+        if (!fileUrl) {
           showErrorNotification('File URL not found', 'Preview Failed')
+          return
         }
+        window.open(fileUrl, '_blank')
       } catch (error) {
         console.error('Preview error:', error)
-        showErrorNotification('Failed to preview file', 'Preview Error')
+        showErrorNotification('Failed to preview file', 'Preview Failed')
       }
     },
-    removeFile() {
-      this.form.attachment = null
-      this.$refs.fileInput.value = ''
+    removeAttachment(index) {
+      this.form.attachments.splice(index, 1)
+      if (this.$refs.fileInput && this.form.attachments.length === 0) {
+        this.$refs.fileInput.value = ''
+      }
     },
     async handleSubmit() {
       if (!this.form.resolverId) {
@@ -297,31 +301,30 @@ export default {
       try {
         let attachmentData = null
         
-        // Upload new file if user uploaded one
-        if (this.form.attachment && this.form.attachment.data) {
+        // Separate new files (with .data) and existing (without .data)
+        const newFiles = this.form.attachments.filter(a => a.data)
+        const existingFiles = this.form.attachments.filter(a => !a.data)
+        
+        // Upload new files if any
+        if (newFiles.length > 0) {
           const formData = new FormData()
-          formData.append('file', this.form.attachment.data)
-          
+          newFiles.forEach(f => formData.append('files', f.data))
+
           try {
-            const response = await fetch('http://localhost:8080/api/non-projects/upload', {
-              method: 'POST',
-              body: formData
+            const uploadUrl = `${axios.defaults.baseURL}non-projects/uploads`
+            const { data } = await axios.post(uploadUrl, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
             })
-            
-            if (!response.ok) {
-              throw new Error('File upload failed')
-            }
-            
-            const result = await response.json()
-            attachmentData = result.data
+            // Merge uploaded files with existing
+            attachmentData = [...existingFiles, ...data.data]
           } catch (uploadError) {
-            showErrorNotification('Failed to upload file: ' + uploadError.message)
+            const msg = uploadError?.response?.data?.message || uploadError.message || 'File upload failed'
+            showErrorNotification('Failed to upload file: ' + msg)
             return
           }
-        } 
-        // Keep existing attachment if no new file uploaded
-        else if (this.form.attachment && !this.form.attachment.data) {
-          attachmentData = this.form.attachment
+        } else {
+          // No new files, just keep existing
+          attachmentData = existingFiles.length > 0 ? existingFiles : null
         }
         
         const payload = {
@@ -340,8 +343,7 @@ export default {
           application: this.form.application,
           tanggal: this.form.date,
           date: this.form.date,
-          attachmentsJson: attachmentData ? JSON.stringify(attachmentData) : null,
-          attachmentsCount: attachmentData ? 1 : 0
+          attachment: attachmentData && attachmentData.length > 0 ? attachmentData : null
         }
         
         await this.$store.dispatch('nonProjects/updateNonProject', payload)
@@ -357,33 +359,43 @@ export default {
       const nonProject = this.getNonProjectById(nonProjectId)
       
       if (nonProject) {
-        // Handle both name (string) and ID (number) formats
         let createdById = nonProject.createdBy
         let resolverId = nonProject.resolverPic
         
-        // If createdBy is a name string, convert to ID
         if (typeof createdById === 'string') {
           createdById = this.employeeIdByName(createdById)
         }
         
-        // If resolverPic is a name string, convert to ID
         if (typeof resolverId === 'string') {
           resolverId = this.employeeIdByName(resolverId)
         }
         
-        // Process attachment - add URL if attachment exists
-        let attachment = null
+        // Process attachments - parse JSON and convert to array
+        let attachments = []
         if (nonProject.attachment) {
-          // Parse if it's a JSON string
-          const attachmentData = typeof nonProject.attachment === 'string' 
-            ? JSON.parse(nonProject.attachment) 
-            : nonProject.attachment
+          try {
+            const parsed = typeof nonProject.attachment === 'string' 
+              ? JSON.parse(nonProject.attachment) 
+              : nonProject.attachment
             
-          attachment = {
-            ...attachmentData,
-            // Add URL to access file from backend - use the url from backend if exists
-            url: attachmentData.url || 
-              (attachmentData.name ? `http://localhost:8080/api/non-projects/files/${attachmentData.name}` : null)
+            const items = Array.isArray(parsed) ? parsed : [parsed]
+            attachments = items.map(item => {
+              const computedUrl = (() => {
+                if (item.url) {
+                  if (item.url.startsWith('http')) return item.url
+                  if (item.url.startsWith('/api/')) return `http://localhost:8080${item.url}`
+                  return `http://localhost:8080/api/${item.url.replace(/^\//,'')}`
+                }
+                return item.name ? `http://localhost:8080/api/non-projects/files/${item.name}` : null
+              })()
+              
+              return {
+                ...item,
+                url: computedUrl
+              }
+            })
+          } catch (e) {
+            console.error('Failed to parse attachments:', e)
           }
         }
         
@@ -397,7 +409,7 @@ export default {
           solution: nonProject.solution || '',
           application: nonProject.application || '',
           date: nonProject.date || '',
-          attachment: attachment
+          attachments: attachments
         }
       } else {
         showErrorNotification('Non-Project not found')
@@ -413,6 +425,18 @@ export default {
     this.$store.dispatch('nonProjects/fetchNonProjects').then(() => {
       this.loadNonProject()
     })
+  },
+  watch: {
+    // Re-load when navigating between different edit pages or after refresh
+    '$route.params.id': {
+      handler() {
+        // Re-fetch to ensure fresh data from backend
+        this.$store.dispatch('nonProjects/fetchNonProjects').then(() => {
+          this.loadNonProject()
+        })
+      },
+      immediate: false
+    }
   }
 }
 </script>

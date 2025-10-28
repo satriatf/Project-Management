@@ -55,7 +55,7 @@ import ProjectTable from '@/components/Projects/ProjectTable.vue'
 import TablePagination from '@/components/partials/TablePagination.vue'
 import { showSuccessNotification, showDeleteConfirmation } from '@/common/notificationService'
 import Swal from 'sweetalert2'
-import '@/assets/css/projects.css'
+import '@/assets/css/views/projects.css'
 
 export default {
   name: 'ProjectList',

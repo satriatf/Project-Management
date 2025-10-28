@@ -84,6 +84,7 @@
 
 <script>
 import '@/assets/css/components/tables.css'
+import '@/assets/css/components/projects.css'
 
 export default {
   name: 'ProjectTable',
@@ -140,82 +141,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.progress {
-  background-color: #e9ecef;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  font-size: 11px;
-  font-weight: 600;
-  transition: width 0.6s ease;
-}
-
-.pic-list {
-  text-align: left;
-  min-width: 250px;
-}
-
-.pic-item {
-  padding: 2px 0;
-  line-height: 1.5;
-  white-space: normal;
-  word-wrap: break-word;
-}
-
-.pic-number {
-  color: #000000;
-  font-weight: 500;
-}
-
-.pic-name {
-  color: #000000;
-  font-weight: 400;
-}
-
-/* Badge styling */
-.badge-status {
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.badge-done {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.badge-progress {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-}
-
-.badge-testing {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-}
-
-.badge-cancelled {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-}
-
-.badge-default {
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-  color: white;
-}
-
-/* Action buttons */
-.btn-link {
-  transition: all 0.2s ease;
-}
-
-.btn-link:hover {
-  transform: scale(1.1);
-}
-</style>

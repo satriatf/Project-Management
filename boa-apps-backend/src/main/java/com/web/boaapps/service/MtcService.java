@@ -8,7 +8,13 @@ import com.web.boaapps.repository.MasterNonProjectTypeRepository;
 import com.web.boaapps.repository.MtcRepository;
 import com.web.boaapps.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -96,8 +102,24 @@ public class MtcService {
         if (req.getSolusi()!=null) m.setSolusi(req.getSolusi());
     // application handled above
         if (req.getTanggal()!=null) m.setTanggal(req.getTanggal());
-        if (req.getAttachmentsJson()!=null) m.setAttachmentsJson(req.getAttachmentsJson());
-        if (req.getAttachmentsCount()!=null) m.setAttachmentsCount(req.getAttachmentsCount());
+        // Attachments update/clear logic with physical file cleanup
+        if (req.getAttachmentsCount()!=null) {
+            // When client explicitly sends 0, clear attachments AND delete physical files
+            if (req.getAttachmentsCount() == 0) {
+                deletePhysicalFiles(m.getAttachmentsJson());
+                m.setAttachmentsJson(null);
+                m.setAttachmentsCount(Short.valueOf((short)0));
+            } else {
+                // count > 0 → detect removed files and delete them
+                deleteRemovedFiles(m.getAttachmentsJson(), req.getAttachmentsJson());
+                m.setAttachmentsJson(req.getAttachmentsJson());
+                m.setAttachmentsCount(req.getAttachmentsCount());
+            }
+        } else if (req.getAttachmentsJson()!=null) {
+            // If only JSON sent, check for removed files
+            deleteRemovedFiles(m.getAttachmentsJson(), req.getAttachmentsJson());
+            m.setAttachmentsJson(req.getAttachmentsJson());
+        }
         m.setUpdatedAt(LocalDateTime.now());
         return repo.save(m);
     }
@@ -105,7 +127,130 @@ public class MtcService {
     public void delete(Long id){ 
         Mtc m = repo.findById(id).orElseThrow(
             ()->new RuntimeException("Non-Project not found with id: " + id));
+        
+        // Delete physical files before deleting record
+        if (m.getAttachmentsJson() != null && !m.getAttachmentsJson().isEmpty()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(m.getAttachmentsJson());
+                Path uploadDir = Paths.get("public","file","non-projects").toAbsolutePath();
+                
+                if (root.isArray()) {
+                    for (JsonNode fileNode : root) {
+                        String filename = fileNode.has("name") ? fileNode.get("name").asText() : null;
+                        if (filename != null && !filename.isEmpty()) {
+                            Path filePath = uploadDir.resolve(filename);
+                            try {
+                                if (Files.exists(filePath)) {
+                                    Files.delete(filePath);
+                                    System.out.println("Deleted file: " + filePath);
+                                }
+                            } catch (IOException e) {
+                                System.err.println("Failed to delete file: " + filePath + ", error: " + e.getMessage());
+                            }
+                        }
+                    }
+                } else if (root.isObject()) {
+                    // Single file (legacy)
+                    String filename = root.has("name") ? root.get("name").asText() : null;
+                    if (filename != null && !filename.isEmpty()) {
+                        Path filePath = uploadDir.resolve(filename);
+                        try {
+                            if (Files.exists(filePath)) {
+                                Files.delete(filePath);
+                                System.out.println("Deleted file: " + filePath);
+                            }
+                        } catch (IOException e) {
+                            System.err.println("Failed to delete file: " + filePath + ", error: " + e.getMessage());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to parse attachmentsJson for cleanup: " + e.getMessage());
+                // Continue with record deletion even if file cleanup fails
+            }
+        }
+        
         // Permanent delete
         repo.delete(m);
+    }
+
+    // Helper: Delete physical files given JSON string
+    private void deletePhysicalFiles(String attachmentsJson) {
+        if (attachmentsJson == null || attachmentsJson.isEmpty()) return;
+        
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(attachmentsJson);
+            Path uploadDir = Paths.get("public","file","non-projects").toAbsolutePath();
+            
+            if (root.isArray()) {
+                for (JsonNode fileNode : root) {
+                    deleteFile(fileNode, uploadDir);
+                }
+            } else if (root.isObject()) {
+                deleteFile(root, uploadDir);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to delete physical files: " + e.getMessage());
+        }
+    }
+
+    // Helper: Delete files that were removed (compare old vs new JSON)
+    private void deleteRemovedFiles(String oldJson, String newJson) {
+        if (oldJson == null || oldJson.isEmpty()) return;
+        if (newJson == null || newJson.isEmpty()) {
+            deletePhysicalFiles(oldJson);
+            return;
+        }
+        
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode oldRoot = mapper.readTree(oldJson);
+            JsonNode newRoot = mapper.readTree(newJson);
+            
+            java.util.Set<String> newFilenames = new java.util.HashSet<>();
+            if (newRoot.isArray()) {
+                for (JsonNode node : newRoot) {
+                    if (node.has("name")) newFilenames.add(node.get("name").asText());
+                }
+            } else if (newRoot.isObject() && newRoot.has("name")) {
+                newFilenames.add(newRoot.get("name").asText());
+            }
+            
+            Path uploadDir = Paths.get("public","file","non-projects").toAbsolutePath();
+            
+            if (oldRoot.isArray()) {
+                for (JsonNode fileNode : oldRoot) {
+                    String filename = fileNode.has("name") ? fileNode.get("name").asText() : null;
+                    if (filename != null && !newFilenames.contains(filename)) {
+                        deleteFile(fileNode, uploadDir);
+                    }
+                }
+            } else if (oldRoot.isObject()) {
+                String filename = oldRoot.has("name") ? oldRoot.get("name").asText() : null;
+                if (filename != null && !newFilenames.contains(filename)) {
+                    deleteFile(oldRoot, uploadDir);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to compare and delete removed files: " + e.getMessage());
+        }
+    }
+
+    // Helper: Delete a single file given JSON node
+    private void deleteFile(JsonNode fileNode, Path uploadDir) {
+        String filename = fileNode.has("name") ? fileNode.get("name").asText() : null;
+        if (filename != null && !filename.isEmpty()) {
+            Path filePath = uploadDir.resolve(filename);
+            try {
+                if (Files.exists(filePath)) {
+                    Files.delete(filePath);
+                    System.out.println("Deleted file: " + filePath);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to delete file: " + filePath + ", error: " + e.getMessage());
+            }
+        }
     }
 }

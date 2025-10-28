@@ -152,7 +152,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { showInfoNotification, showSuccessNotification, showErrorNotification, showWarningNotification } from '@/common/notificationService'
-import '@/assets/css/projects.css'
+import '@/assets/css/views/projects.css'
 
 export default {
   name: 'ProjectCreate',
