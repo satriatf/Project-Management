@@ -1,105 +1,180 @@
 <template>
   <div class="container-fluid">
-    <!-- Page title styled like Timeline -->
-    <div class="page-header pt-4 pb-3 d-flex justify-content-between align-items-center">
+    <!-- Page title -->
+    <div class="page-header pt-4 pb-2">
       <h1 class="h2 mb-0">Dashboard</h1>
-      <div></div>
     </div>
 
-    <!-- Welcome card -->
-    <div class="welcome-section pb-3">
+    <!-- Welcome section -->
+    <div class="welcome-section pb-4">
       <div class="row">
         <div class="col-12">
-          <div class="welcome-card p-4 rounded shadow-sm bg-white d-flex align-items-center">
-            <div class="avatar-circle me-3">
-              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="16" fill="#e5e7eb"/>
-                <path d="M16 18c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5zm0-2a4 4 0 100-8 4 4 0 000 8z" fill="#6b7280"/>
-              </svg>
+          <div class="welcome-card p-4 rounded-4 shadow-sm bg-white d-flex align-items-center">
+            <div class="avatar-circle-large me-4">
+              <span class="avatar-text-large">{{ userInitials }}</span>
             </div>
             <div>
-              <div class="fw-bold" style="color:#111;">Welcome to</div>
-              <small style="color:#111; font-weight:500;">{{ userName }}</small>
-            </div>
-            <div class="ms-auto">
-              <button @click="signOut" class="btn btn-outline-secondary">
-                <i class="fa fa-sign-out me-2"></i>Sign out
-              </button>
+              <div class="welcome-label text-muted small fw-bold">Welcome</div>
+              <h4 class="user-name mb-0 fw-bold">{{ userName }}</h4>
+              <div class="user-role text-muted fw-medium">{{ userPosition }}</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Dashboard Cards -->
-    <div class="row g-4 pb-4">
-      <div class="col-md-6 col-lg-4 col-xl">
-        <div class="dashboard-card p-4 rounded shadow-sm bg-white h-100">
-          <div class="d-flex align-items-center mb-2">
-            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M8.5 11C10.7091 11 12.5 9.20914 12.5 7C12.5 4.79086 10.7091 3 8.5 3C6.29086 3 4.5 4.79086 4.5 7C4.5 9.20914 6.29086 11 8.5 11Z" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M20 8V14" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M23 11H17" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="text-muted">Employees</span>
+    <div class="row">
+      <!-- Summary Cards Column -->
+      <div class="col-lg-7">
+        <div class="row g-4 pb-4">
+          <!-- Row 1 -->
+          <div class="col-md-6">
+            <div class="dashboard-card p-4 rounded-4 shadow-sm bg-white h-100 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-label mb-1">Employees</div>
+                <h2 class="mb-0 count-text">{{ employeeCount }}</h2>
+              </div>
+              <div class="card-icon-wrapper icon-blue">
+                <i class="bi bi-people-fill"></i>
+              </div>
+            </div>
           </div>
-          <h2 class="mb-0">{{ employeeCount }}</h2>
+          <div class="col-md-6">
+            <div class="dashboard-card p-4 rounded-4 shadow-sm bg-white h-100 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-label mb-1">Projects</div>
+                <h2 class="mb-0 count-text">{{ projectCount }}</h2>
+              </div>
+              <div class="card-icon-wrapper icon-green">
+                <i class="bi bi-briefcase-fill"></i>
+              </div>
+            </div>
+          </div>
+          <!-- Row 2 -->
+          <div class="col-md-6">
+            <div class="dashboard-card p-4 rounded-4 shadow-sm bg-white h-100 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-label mb-1">Non-Projects</div>
+                <h2 class="mb-0 count-text">{{ nonProjectCount }}</h2>
+              </div>
+              <div class="card-icon-wrapper icon-orange">
+                <i class="bi bi-journal-text"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="dashboard-card p-4 rounded-4 shadow-sm bg-white h-100 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-label mb-1">On Leaves</div>
+                <h2 class="mb-0 count-text">{{ onLeavesCount }}</h2>
+              </div>
+              <div class="card-icon-wrapper icon-purple">
+                <i class="bi bi-person-x-fill"></i>
+              </div>
+            </div>
+          </div>
+          <!-- Row 3 -->
+          <div class="col-md-6">
+            <div class="dashboard-card p-4 rounded-4 shadow-sm bg-white h-100 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-label mb-1">Applications</div>
+                <h2 class="mb-0 count-text">{{ applicationCount }}</h2>
+              </div>
+              <div class="card-icon-wrapper icon-cyan">
+                <i class="bi bi-window-stack"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="dashboard-card p-4 rounded-4 shadow-sm bg-white h-100 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-label mb-1">Holidays</div>
+                <h2 class="mb-0 count-text">{{ holidayCount }}</h2>
+              </div>
+              <div class="card-icon-wrapper icon-red">
+                <i class="bi bi-calendar2-week-fill"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="col-md-6 col-lg-4 col-xl">
-        <div class="dashboard-card p-4 rounded shadow-sm bg-white h-100">
-          <div class="d-flex align-items-center mb-2">
-            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="text-muted">Projects</span>
+      <!-- Tasks Overview Chart Column -->
+      <div class="col-lg-5">
+        <div class="chart-container-card p-4 rounded-4 shadow-sm bg-white h-100 pb-3">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+              <h5 class="mb-0 fw-bold me-2">Tasks Overview</h5>
+              <div class="custom-tooltip-container">
+                <i class="bi bi-info-circle-fill text-primary small cursor-pointer"></i>
+                <div class="custom-tooltip">
+                  <span class="tooltip-title">Overview Tahun {{ selectedYear }}</span>
+                  <div class="tooltip-row">
+                    <span>Total Projects:</span>
+                    <span class="tooltip-value">{{ projectCount }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span>Total Non-Projects:</span>
+                    <span class="tooltip-value">{{ nonProjectCount }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <select v-model="selectedYear" class="year-filter-select">
+              <option v-for="year in availableYears" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
           </div>
-          <h2 class="mb-0">{{ projectCount }}</h2>
-        </div>
-      </div>
+          
+          <div class="chart-wrapper">
+            <!-- Y-Axis Labels -->
+            <div class="chart-y-axis">
+              <span>50</span>
+              <span>40</span>
+              <span>30</span>
+              <span>20</span>
+              <span>10</span>
+              <span>0</span>
+            </div>
 
-      <div class="col-md-6 col-lg-4 col-xl">
-        <div class="dashboard-card p-4 rounded shadow-sm bg-white h-100">
-          <div class="d-flex align-items-center mb-2">
-            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="text-muted">Non-Projects</span>
-          </div>
-          <h2 class="mb-0">{{ nonProjectCount }}</h2>
-        </div>
-      </div>
+            <!-- Main Chart Area -->
+            <div class="chart-main">
+              <!-- Grid Lines -->
+              <div class="chart-grid-rules">
+                <div class="grid-line"></div>
+                <div class="grid-line"></div>
+                <div class="grid-line"></div>
+                <div class="grid-line"></div>
+                <div class="grid-line"></div>
+                <div class="grid-line" style="border-top-style: solid; border-top-color: #e5e7eb;"></div>
+              </div>
 
-      <div class="col-md-6 col-lg-4 col-xl">
-        <div class="dashboard-card p-4 rounded shadow-sm bg-white h-100">
-          <div class="d-flex align-items-center mb-2">
-            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="text-muted">Applications</span>
+              <!-- Bars -->
+              <div class="d-flex justify-content-around align-items-end h-100 px-4">
+                <!-- Bar for Projects -->
+                <div class="bar-group text-center">
+                  <div class="bar bar-projects" :style="{ height: projectBarHeight + '%' }"></div>
+                  <div class="mt-2 small text-muted" style="position: absolute; bottom: -30px; width: 100%;">Tasks</div>
+                </div>
+                <!-- Bar for Non-Projects -->
+                <div class="bar-group text-center">
+                  <div class="bar bar-nonproblems" :style="{ height: nonProjectBarHeight + '%' }"></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 class="mb-0">{{ applicationCount }}</h2>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-4 col-xl">
-        <div class="dashboard-card p-4 rounded shadow-sm bg-white h-100">
-          <div class="d-flex align-items-center mb-2">
-            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="16" y1="2" x2="16" y2="6" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="8" y1="2" x2="8" y2="6" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="3" y1="10" x2="21" y2="10" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="text-muted">Holidays</span>
+          
+          <div class="chart-legend d-flex justify-content-center mt-5 pt-3 border-top gap-4">
+            <div class="legend-item d-flex align-items-center">
+              <span class="legend-dot bar-projects me-2"></span>
+              <span class="small fw-medium">Projects ({{ projectCount }})</span>
+            </div>
+            <div class="legend-item d-flex align-items-center">
+              <span class="legend-dot bar-nonproblems me-2"></span>
+              <span class="small fw-medium">Non-Projects ({{ nonProjectCount }})</span>
+            </div>
           </div>
-          <h2 class="mb-0">{{ holidayCount }}</h2>
         </div>
       </div>
     </div>
@@ -113,6 +188,11 @@ import '@/assets/css/views/dashboard.css'
 
 export default {
   name: 'DashboardView',
+  data() {
+    return {
+      selectedYear: new Date().getFullYear()
+    }
+  },
   computed: {
     ...mapGetters({
       employees: 'employees/allEmployees',
@@ -121,14 +201,25 @@ export default {
       applications: 'master/activeApplications',
       holidays: 'master/activeHolidays'
     }),
+    availableYears() {
+      return [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
+    },
     employeeCount() {
       return this.employees.length
     },
     projectCount() {
-      return this.projects.length
+      return this.projects.filter(p => {
+        if (!p.start_date) return false
+        const year = new Date(p.start_date).getFullYear()
+        return year === this.selectedYear
+      }).length
     },
     nonProjectCount() {
-      return this.nonProjects.length
+      return this.nonProjects.filter(np => {
+        if (!np.date) return false
+        const year = new Date(np.date).getFullYear()
+        return year === this.selectedYear
+      }).length
     },
     applicationCount() {
       return this.applications.length
@@ -136,28 +227,38 @@ export default {
     holidayCount() {
       return this.holidays.length
     },
-    userName() {
-      // Ambil nama yang tersimpan terenkripsi dari sessionStorage dan dekripsi via userService
-      return userService.getNama() || ''
+    onLeavesCount() {
+      // Dummy data for now as matched in reference image
+      return 1
     },
-    userInitialsFull() {
+    userName() {
+      return userService.getNama() || 'User'
+    },
+    userPosition() {
+      const pos = userService.getUserPosition()
+      return pos && typeof pos === 'string' ? pos : 'Intern'
+    },
+    userInitials() {
       const name = this.userName?.trim()
-      if (!name) return ''
-      // show full initials in lowercase, e.g. "Satria Tri Ferdiansyah" => "stf"
-      return name.split(/\s+/).map(p => p[0]).join('').toLowerCase()
-    }
-  },
-  methods: {
-    signOut() {
-      // Clear sessionStorage dan redirect
-      sessionStorage.clear()
-      this.$router.push({ name: 'login' }).then(() => {
-        window.location.reload()
-      })
+      if (!name) return 'U'
+      const parts = name.split(/\s+/)
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      }
+      return name[0].toUpperCase()
+    },
+    projectBarHeight() {
+      // Scale relative to fixed max of 50
+      const max = 50
+      return Math.min(Math.round((this.projectCount / max) * 100), 100)
+    },
+    nonProjectBarHeight() {
+      // Scale relative to fixed max of 50
+      const max = 50
+      return Math.min(Math.round((this.nonProjectCount / max) * 100), 100)
     }
   },
   mounted() {
-    // Load data from API when component mounted
     this.$store.dispatch('employees/fetchEmployees')
     this.$store.dispatch('projects/fetchProjects')
     this.$store.dispatch('nonProjects/fetchNonProjects')

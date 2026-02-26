@@ -1,0 +1,22 @@
+/* Dashboard Calendar Styles */
+.dashboard-calendar-section {
+  margin-bottom: 2rem;
+}
+
+.calendar-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Responsive layout */
+@media (min-width: 992px) {
+  .calendar-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@media (max-width: 991px) {
+  .calendar-grid {
+    grid-template-columns: 1fr;
+  }
+}

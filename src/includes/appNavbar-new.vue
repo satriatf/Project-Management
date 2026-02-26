@@ -9,33 +9,27 @@
         <!-- User Profile Dropdown only, no search box -->
         <div class="dropdown d-inline-block">
           <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" 
-             id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="avatar-circle-svg me-2">
-              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="16" fill="#e5e7eb"/>
-                <path d="M16 18c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5zm0-2a4 4 0 100-8 4 4 0 000 8z" fill="#6b7280"/>
-              </svg>
+             id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="color: #000;">
+            <div class="avatar-badge me-2">
+              {{ userInitials }}
             </div>
             <div class="d-none d-md-block">
-              <div class="fw-semibold user-name-text" style="font-size: 14px; line-height: 1.2;">{{ userName }}</div>
+              <div class="fw-bold user-name-text" style="font-size: 14px;">{{ userName }}</div>
             </div>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
-            <li class="px-3 py-3 border-bottom text-center">
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="userDropdown">
+            <li class="px-4 py-3 border-bottom text-center">
               <div class="d-flex flex-column align-items-center">
-                <div class="avatar-circle-svg-large mb-2">
-                  <svg width="45" height="45" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="16" cy="16" r="16" fill="#e5e7eb"/>
-                    <path d="M16 18c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5zm0-2a4 4 0 100-8 4 4 0 000 8z" fill="#6b7280"/>
-                  </svg>
+                <div class="avatar-badge-large mb-2">
+                  {{ userInitials }}
                 </div>
-                <div class="fw-bold" style="font-size: 14px; color: #000;">{{ userName }}</div>
+                <div class="fw-bold" style="font-size: 15px; color: #000;">{{ userName }}</div>
                 <small class="text-muted">{{ userRole }}</small>
               </div>
             </li>
-            <li>
-              <a class="dropdown-item py-2" href="#" @click.prevent="logout">
-                <i class="fa fa-sign-out me-2"></i>Sign out
+            <li class="py-1">
+              <a class="dropdown-item py-2 px-4" href="#" @click.prevent="logout">
+                <i class="fa fa-sign-out me-2 text-danger"></i>Sign out
               </a>
             </li>
           </ul>
@@ -63,16 +57,14 @@ export default {
       if (Array.isArray(role)) return role.join(', ')
       return role || ''
     },
-    userInitialsShort() {
+    userInitials() {
       const name = this.userName?.trim()
-      if (!name) return ''
-      // use full initials in lowercase (e.g., "stf")
-      return name.split(/\s+/).map(p => p[0]).join('').toLowerCase()
-    },
-    userInitialsFull() {
-      const name = this.userName?.trim()
-      if (!name) return ''
-      return name.split(/\s+/).map(p => p[0]).join('').toLowerCase()
+      if (!name) return 'U'
+      const parts = name.split(/\s+/)
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      }
+      return name[0].toUpperCase()
     }
   },
   methods: {

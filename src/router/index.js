@@ -25,6 +25,13 @@ import NonProjectEdit from '../views/NonProjects/NonProjectEdit.vue'
 // Timeline
 import Timeline from '../views/Timeline/Timeline.vue'
 
+// Calendar
+import MonthlyCalendar from '../views/Calendar/MonthlyCalendar.vue'
+import YearlyCalendar from '../views/Calendar/YearlyCalendar.vue'
+
+// On Leaves
+import OnLeaves from '../views/Employees/OnLeaves.vue'
+
 // Master - Non-Project Types
 import NonProjectTypeList from '../views/Master/NonProjectType/NonProjectTypeList.vue'
 import NonProjectTypeCreate from '../views/Master/NonProjectType/NonProjectTypeCreate.vue'
@@ -111,6 +118,23 @@ const router = createRouter({
           path: 'timeline',
           name: 'timeline',
           component: Timeline
+        },
+        // Calendar
+        {
+          path: 'calendar/monthly',
+          name: 'calendar-monthly',
+          component: MonthlyCalendar
+        },
+        {
+          path: 'calendar/yearly',
+          name: 'calendar-yearly',
+          component: YearlyCalendar
+        },
+        // On Leaves
+        {
+          path: 'on-leaves',
+          name: 'on-leaves',
+          component: OnLeaves
         },
         // Master - Non-Project Types
         {

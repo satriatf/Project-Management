@@ -64,26 +64,33 @@
   background-clip: text;
 }
 
-.avatar-circle-svg {
-  width: 36px;
-  height: 36px;
+.avatar-badge {
+  width: 32px;
+  height: 32px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: -0.01em;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
 }
 
-.avatar-circle-svg:hover {
-  transform: scale(1.05);
-}
-
-.avatar-circle-svg-large {
-  width: 45px;
-  height: 45px;
+.avatar-badge-large {
+  width: 48px;
+  height: 48px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.01em;
   flex-shrink: 0;
 }
 
